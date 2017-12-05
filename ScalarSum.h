@@ -21,10 +21,17 @@ class ScalarSum {
   void Negate() { for (auto & scalar : *scalars) { scalar->Negate(); } }; 
   void DivideByTwo() { for (auto & scalar : *scalars) { scalar->DivideByTwo(); } }; 
 
+  void DivideCoefficient(Rational const & coeff);
+
+  Rational Ratio(ScalarSum const & other) const;
+
   void MergeWithOther(ScalarSum const & other) { scalars->insert(scalars->end(), std::make_move_iterator(other.scalars->begin()), std::make_move_iterator(other.scalars->end())); };
 
   void Sort();
   void Collect();
+
+  bool operator== (ScalarSum const & other) const;
+  bool operator< (ScalarSum const & other) const;
 
   ~ScalarSum() = default;
 };

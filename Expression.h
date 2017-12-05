@@ -1,5 +1,9 @@
 #pragma once
 
+#include <algorithm>
+#include <memory>
+#include <vector>
+
 #include "MonomialExpression.h"
 #include "Rational.h"
 #include "Scalar.h"
@@ -15,6 +19,16 @@ class Expression {
  public:
   Expression() : summands(std::make_unique<std::vector<Summand>>()) { };
 
+  Expression(Expression const & other) : summands(std::make_unique<Sum>()) {
+    std::for_each(std::make_move_iterator(other.summands->begin()), std::make_move_iterator(other.summands->end()), [this](auto it) {
+      summands->push_back(std::pair<std::unique_ptr<MonomialExpression>, std::unique_ptr<ScalarSum>>());
+      auto monexp_new = std::make_unique<MonomialExpression>(*(it.first));
+      auto scalar_new = std::make_unique<ScalarSum>(*(it.second));
+      std::swap((*(--summands->end())).first, monexp_new);
+      std::swap((*(--summands->end())).second, scalar_new);
+    });
+  };
+
   void AddSummand (MonomialExpression const & monomial_expression, Scalar const & scalar);
   void AddSummand (MonomialExpression const & monomial_expression);
   void AddSummand (MonomialExpression const & monomial_expression, Rational const & rational);
@@ -25,10 +39,14 @@ class Expression {
   void CanonicalisePrefactors();
   void CollectPrefactors();
   void EliminateZeros();
+  void RedefineScalars(std::string const & base_name);
   void SortMonomials();
   void SortSummands();
+  void SortSummandsByPrefactors();
 
   void ExchangeSymmetrise(Indices const & indices_1, Indices const & indices_2, bool anti = false);
+
+  bool ContainsMonomial (MonomialExpression const & monexpr) const;
 
   std::string const GetLatexString(bool upper = true) const;
 

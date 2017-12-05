@@ -15,6 +15,7 @@ class Indices {
  public:
   Indices() = default;
   Indices(std::initializer_list<Index> list) : indices(list) { };
+  Indices(std::initializer_list<char> list);
 
   Indices(Indices const & other) : indices(other.indices) { };
   Indices(Indices const & other, std::map<Index, Index> const & exchange_map);
@@ -27,6 +28,7 @@ class Indices {
 
   bool Sort();
 
+  Indices Permutation(std::vector<size_t> const & permutation) const;
   Indices SubIndices(size_t start, size_t len) const;
 
   bool operator== (Indices const & other) const { return indices == other.indices; };

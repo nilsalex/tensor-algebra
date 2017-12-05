@@ -14,8 +14,6 @@ class Generator {
   Tensor epsilon;
   std::vector<std::pair<Indices, bool>> symmetries;
 
-  Expression expression;
-
  public:
   Generator() = delete;
   Generator(Indices const & indices_set, std::initializer_list<std::pair<Indices, bool>> const & symmetries_set);

@@ -2,6 +2,14 @@
 
 #include "Indices.h"
 
+Indices::Indices(std::initializer_list<char> list) {
+  indices.resize(list.size());
+  std::transform(list.begin(), list.end(), indices.begin(),
+    [](auto c) {
+      return static_cast<Index>(c - 97);
+    });
+}
+
 Indices::Indices(Indices const & other, std::map<Index, Index> const & exchange_map) : indices(std::vector<Index>()){
   for (Index index : other.indices) {
     indices.push_back(exchange_map.at(index));
@@ -39,6 +47,16 @@ std::string const Indices::ToString() const {
   return_string += "}";
 
   return return_string;
+}
+
+Indices Indices::Permutation(std::vector<size_t> const & permutation) const {
+  Indices indices_new = *this;
+
+  for (size_t counter = 0; counter < indices.size(); ++counter) {
+    indices_new.indices[counter] = indices[permutation[counter]];
+  }
+
+  return indices_new;
 }
 
 Indices Indices::SubIndices(size_t start, size_t len) const {

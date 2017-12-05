@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <sstream>
 
 #include "Scalar.h"
@@ -38,16 +39,10 @@ void ScalarSum::Sort() {
     scalar->Sort();
   }
 
-  bool swapped;
-  do {
-    swapped = false;
-    for (auto it = scalars->begin(); std::distance(it, scalars->end()) > 1; ++it) {
-      if (**it < **std::next(it)) {
-        std::swap(*it, *std::next(it));
-        swapped = true;
-      }
-    }
-  } while (swapped);
+  std::sort(scalars->begin(), scalars->end(), 
+    [](auto & a, auto & b) {
+      return *a < *b;
+    });
 }
 
 void ScalarSum::Collect() {
@@ -97,3 +92,30 @@ bool ScalarSum::IsZero() const {
   return zero;
 }
 
+void ScalarSum::DivideCoefficient(Rational const & coeff) {
+  std::for_each(scalars->begin(), scalars->end(), 
+    [&coeff](auto & a) {
+      a->DivideCoefficient(coeff);
+    });
+}
+
+Rational ScalarSum::Ratio(ScalarSum const & other) const {
+  return Rational (scalars->front()->get_coefficient().DivideOther(other.scalars->front()->get_coefficient()));
+}
+
+bool ScalarSum::operator==(ScalarSum const & other) const {
+  Rational ratio (scalars->front()->get_coefficient().DivideOther(other.scalars->front()->get_coefficient()));
+  return std::equal(scalars->cbegin(), scalars->cend(), other.scalars->cbegin(), other.scalars->cend(),
+    [&ratio](auto & a, auto & b) {
+      Scalar b_tmp = *b;
+      b_tmp.MultiplyCoefficient(ratio);
+      return *a == b_tmp;
+    });
+}
+
+bool ScalarSum::operator<(ScalarSum const & other) const {
+  return std::lexicographical_compare(this->scalars->cbegin(), this->scalars->cend(), other.scalars->cbegin(), other.scalars->cend(),
+    [] (auto & a, auto & b) {
+      return *a < *b;
+    });
+}

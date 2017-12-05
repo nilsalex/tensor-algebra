@@ -48,6 +48,21 @@ Rational Rational::SubtractOther (Rational const & other) const {
   return Rational(fraction.first * other.fraction.second - fraction.second * other.fraction.first, fraction.second * other.fraction.second);
 }
 
+Rational Rational::DivideOther (Rational const & other) const {
+  int numerator = fraction.first * static_cast<int>(other.fraction.second);
+  int denominator = static_cast<int>(fraction.second) * other.fraction.first;
+
+  if (numerator * denominator < 0) {
+    return Rational(-1 * std::abs(numerator), static_cast<unsigned int>(std::abs(denominator)));
+  } else {
+    return Rational(std::abs(numerator), static_cast<unsigned int>(std::abs(denominator)));
+  }
+}
+
+Rational Rational::MultiplyOther (Rational const & other) const {
+  return Rational(fraction.first * other.fraction.first, fraction.second * other.fraction.second);
+}
+
 std::string const Rational::ToString(bool plus_sign) const {
   std::string ret_string = "";
   if (fraction.first == 0) {

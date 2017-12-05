@@ -69,6 +69,8 @@ class MyPermutation {
     do {
       perm.push_back(IndexPair(pair));
     } while (pair.Next(N));
+
+    this->NextIndexPermutation();
   };
 
   MyPermutation(MyPermutation const & other) = delete;

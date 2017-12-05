@@ -1,120 +1,56 @@
-#include "Expression.h"
+#include "Generator.h"
 #include "Indices.h"
-#include "MonomialExpression.h"
-#include "Rational.h"
-#include "Tensor.h"
-#include "TensorMonomial.h"
 
 #include <iostream>
 
 int main () {
-  Tensor eta (2, "eta");
-  eta.SetSymmetric();
 
-  Tensor epsilon (3, "epsilon");
-  epsilon.SetAntisymmetric();
+  Indices indices1 {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'p', 'q'};
 
-  TensorMonomial tensor1;
-  tensor1.AddFactorRight(eta);
-  tensor1.AddFactorRight(epsilon);
+  Indices indices2 {'b', 'a', 'c', 'd', 'e', 'f', 'g', 'h', 'p', 'q'};
+  Indices indices3 {'a', 'b', 'd', 'c', 'e', 'f', 'g', 'h', 'p', 'q'};
+  Indices indices4 {'a', 'b', 'c', 'd', 'f', 'e', 'g', 'h', 'p', 'q'};
+  Indices indices5 {'a', 'b', 'c', 'd', 'e', 'f', 'h', 'g', 'p', 'q'};
 
-  TensorMonomial tensor2;
-  tensor2.AddFactorRight(epsilon);
-  tensor2.AddFactorRight(eta);
+  Indices indices6 {'c', 'd', 'a', 'b', 'e', 'f', 'g', 'h', 'p', 'q'};
+  Indices indices7 {'a', 'b', 'c', 'd', 'g', 'h', 'e', 'f', 'p', 'q'};
 
-  TensorMonomial tensor3;
-  tensor3.AddFactorRight(epsilon);
-  tensor3.AddFactorRight(eta);
+  Indices indices8 {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'q', 'p'};
 
-  Indices indices1 (std::initializer_list<Index>({Index::a, Index::c, Index::b, Index::e, Index::d}));
-  Indices indices2 (std::initializer_list<Index>({Index::d, Index::e, Index::b, Index::c, Index::a}));
-  Indices indices3 (std::initializer_list<Index>({Index::a, Index::e, Index::b, Index::c, Index::d}));
-  Indices indices4 (std::initializer_list<Index>({Index::a, Index::b, Index::c, Index::d, Index::e}));
-  Indices indices5 (std::initializer_list<Index>({Index::b, Index::a, Index::c, Index::d, Index::e}));
+  Indices indices9 {'e', 'f', 'g', 'h', 'a', 'b', 'c', 'd', 'p', 'q'};
 
-  MonomialExpression mon_expr1 (tensor1, indices1);
-  MonomialExpression mon_expr2 (tensor2, indices2);
-  MonomialExpression mon_expr3 (tensor3, indices3);
+  Generator gtor (indices1, {std::make_pair(indices2, true),
+                             std::make_pair(indices3, true),
+                             std::make_pair(indices4, true),
+                             std::make_pair(indices5, true),
+                             std::make_pair(indices6, false),
+                             std::make_pair(indices7, false),
+                             std::make_pair(indices8, false),
+                             std::make_pair(indices9, false)});
 
-  auto expr = std::make_shared<Expression>();
-  expr->AddSummand(mon_expr1, Rational(5,1), "e");
-  expr->AddSummand(mon_expr3, Rational(7,9));
-  expr->AddSummand(mon_expr2, Rational(31,6));
+  std::cout << gtor.Generate().GetLatexString() << std::endl;
+/*  
+  Indices indices11 {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'};
 
+  Indices indices12 {'b', 'a', 'c', 'd', 'e', 'f', 'g', 'h'};
+  Indices indices13 {'a', 'b', 'd', 'c', 'e', 'f', 'g', 'h'};
+  Indices indices14 {'a', 'b', 'c', 'd', 'f', 'e', 'g', 'h'};
+  Indices indices15 {'a', 'b', 'c', 'd', 'e', 'f', 'h', 'g'};
 
-  std::cout << "***************************" << std::endl;
-  std::cout << "Initial expression:" << std::endl;;
-  std::cout << "\t" << expr->GetLatexString() << std::endl;
+  Indices indices16 {'c', 'd', 'a', 'b', 'e', 'f', 'g', 'h'};
+  Indices indices17 {'a', 'b', 'c', 'd', 'g', 'h', 'e', 'f'};
 
-  std::cout << "***************************" << std::endl;
-  std::cout << "Applying monomial symmetries:" << std::endl;;
-  expr->ApplyMonomialSymmetries();
-  std::cout << "\t" << expr->GetLatexString() << std::endl;
+  Indices indices18 {'e', 'f', 'g', 'h', 'a', 'b', 'c', 'd'};
 
-  std::cout << "***************************" << std::endl;
-  std::cout << "Sorting monomials:" << std::endl;;
-  expr->SortMonomials();
-  std::cout << "\t" << expr->GetLatexString() << std::endl;
+  Generator gtor2 (indices11, {std::make_pair(indices12, true),
+                               std::make_pair(indices13, true),
+                               std::make_pair(indices14, true),
+                               std::make_pair(indices15, true),
+                               std::make_pair(indices16, false),
+                               std::make_pair(indices17, false),
+                               std::make_pair(indices18, false)});
 
-  std::cout << "***************************" << std::endl;
-  std::cout << "Sorting summands:" << std::endl;;
-  expr->SortSummands();
-  std::cout << "\t" << expr->GetLatexString() << std::endl;
-
-  std::cout << "***************************" << std::endl;
-  std::cout << "Collecting prefactors:" << std::endl;;
-  expr->CollectPrefactors();
-  std::cout << "\t" << expr->GetLatexString() << std::endl;
-
-  std::cout << "***************************" << std::endl;
-  std::cout << "ExchangeSymmetrise {a b c d e} -> {b a c d e}" << std::endl;;
-  expr->ExchangeSymmetrise(indices4, indices5);
-  std::cout << "\t" << expr->GetLatexString() << std::endl;
-
-  std::cout << "***************************" << std::endl;
-  std::cout << "Applying monomial symmetries:" << std::endl;;
-  expr->ApplyMonomialSymmetries();
-  std::cout << "\t" << expr->GetLatexString() << std::endl;
-
-  std::cout << "***************************" << std::endl;
-  std::cout << "Sorting monomials:" << std::endl;;
-  expr->SortMonomials();
-  std::cout << "\t" << expr->GetLatexString() << std::endl;
-
-  std::cout << "***************************" << std::endl;
-  std::cout << "Sorting summands:" << std::endl;;
-  expr->SortSummands();
-  std::cout << "\t" << expr->GetLatexString() << std::endl;
-
-  std::cout << "***************************" << std::endl;
-  std::cout << "Collecting prefactors:" << std::endl;;
-  expr->CollectPrefactors();
-  std::cout << "\t" << expr->GetLatexString() << std::endl;
-
-  std::cout << "***************************" << std::endl;
-  std::cout << "ExchangeSymmetrise {a b c d e} -> - {b a c d e}" << std::endl;;
-  expr->ExchangeSymmetrise(indices4, indices5, true);
-  std::cout << "\t" << expr->GetLatexString() << std::endl;
-
-  std::cout << "***************************" << std::endl;
-  std::cout << "Applying monomial symmetries:" << std::endl;;
-  expr->ApplyMonomialSymmetries();
-  std::cout << "\t" << expr->GetLatexString() << std::endl;
-
-  std::cout << "***************************" << std::endl;
-  std::cout << "Sorting monomials:" << std::endl;;
-  expr->SortMonomials();
-  std::cout << "\t" << expr->GetLatexString() << std::endl;
-
-  std::cout << "***************************" << std::endl;
-  std::cout << "Sorting summands:" << std::endl;;
-  expr->SortSummands();
-  std::cout << "\t" << expr->GetLatexString() << std::endl;
-
-  std::cout << "***************************" << std::endl;
-  std::cout << "Collecting prefactors:" << std::endl;;
-  expr->CollectPrefactors();
-  std::cout << "\t" << expr->GetLatexString() << std::endl;
-
+  std::cout << gtor2.Generate().GetLatexString() << std::endl;
+*/
   return 0;
 }

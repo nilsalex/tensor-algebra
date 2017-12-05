@@ -1,3 +1,4 @@
+#include <iostream>
 #include <sstream>
 
 #include "Expression.h"
@@ -129,6 +130,50 @@ void Expression::ExchangeSymmetrise(Indices const & indices1, Indices const & in
   std::swap(summands, summands_new);
 }
 
+void Expression::SortSummandsByPrefactors() {
+  std::sort(summands->begin(), summands->end(), [](auto & a, auto & b) { return *(a.second) < *(b.second); });
+}
+
+bool Expression::ContainsMonomial (MonomialExpression const & monexpr) const {
+  bool ret = false;
+  for (auto & summand : *summands) {
+    if (*(summand.first) == monexpr) {
+      ret = true;
+      break;
+    }
+  }
+
+  return ret;
+}
+
+void Expression::RedefineScalars(std::string const & base_name) {
+  if (summands->size() == 0) {
+    return;
+  }
+
+  auto summands_new = std::make_unique<Sum>();
+  summands_new->push_back(std::make_pair(std::make_unique<MonomialExpression>(), std::make_unique<ScalarSum>(Scalar(base_name + "_" + std::to_string(1)))));
+  std::swap(summands->front().first, summands_new->back().first);
+  
+  size_t variable_counter = 0;
+
+  auto it_last = summands->begin();
+
+  for (auto it = summands->begin() + 1; it != summands->end(); ++it) {
+    Rational coefficient(1,1);
+    if (*(it->second) == *((it - 1)->second)) {
+      coefficient = coefficient.DivideOther((it_last)->second->Ratio(*(it->second)));
+    } else {
+      ++variable_counter;
+      it_last = it;
+    }
+    summands_new->push_back(std::make_pair(std::make_unique<MonomialExpression>(), std::make_unique<ScalarSum>(Scalar(coefficient, base_name + "_" + std::to_string(variable_counter + 1)))));
+    std::swap(it->first, summands_new->back().first);
+  }
+
+  std::swap(summands, summands_new);
+}
+
 std::string const Expression::GetLatexString(bool upper) const {
   std::stringstream ss;
 
@@ -142,7 +187,7 @@ std::string const Expression::GetLatexString(bool upper) const {
     ss << summand.second->ToString(!first) << " ";
     first = false;
 
-    ss << summand.first->GetLatexString(upper) << " ";
+    ss << summand.first->GetLatexString(upper) << "\n";
   }
 
   return ss.str();

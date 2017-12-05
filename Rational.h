@@ -17,6 +17,8 @@ class Rational {
 
   Rational AddOther (Rational const & other) const;
   Rational SubtractOther (Rational const & other) const;
+  Rational DivideOther (Rational const & other) const;
+  Rational MultiplyOther (Rational const & other) const;
 
   void Cancel();
   void DivideByTwo();
