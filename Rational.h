@@ -10,6 +10,7 @@ class Rational {
   Fraction fraction;
 
  public:
+  Rational() : Rational(std::make_pair(0, 1)) { };
   Rational(Fraction const & fraction);
   Rational(int numerator, unsigned int denominator) : Rational(std::make_pair(numerator, denominator)) { };
 

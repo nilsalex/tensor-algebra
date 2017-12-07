@@ -125,6 +125,16 @@ std::set<size_t> ScalarSum::CoefficientSet() const {
   return ret;
 }
 
+std::vector<Rational> ScalarSum::CoefficientVector(std::map<size_t, size_t> const & coefficient_map) const {
+  std::vector<Rational> ret(coefficient_map.size());
+  std::for_each(scalars->begin(), scalars->end(),
+    [&ret,&coefficient_map](auto & a) {
+      ret[coefficient_map.at(a->VariableNumber())] = a->get_coefficient();
+    });
+
+  return ret;
+}
+
 bool ScalarSum::operator==(ScalarSum const & other) const {
   Rational ratio (scalars->front()->get_coefficient().DivideOther(other.scalars->front()->get_coefficient()));
   return std::equal(scalars->cbegin(), scalars->cend(), other.scalars->cbegin(), other.scalars->cend(),

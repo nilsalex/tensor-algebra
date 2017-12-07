@@ -6,7 +6,7 @@
 void NumericSimplify(Expression const &, Indices const &);
 
 int main () {
-/*
+
   Indices indices1 {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'p', 'q'};
 
   Indices indices2 {'b', 'a', 'c', 'd', 'e', 'f', 'g', 'h', 'p', 'q'};
@@ -31,7 +31,7 @@ int main () {
                              std::make_pair(indices9, false)});
 
   std::cout << gtor.Generate().GetLatexString() << std::endl;
-*/  
+/*  
   Indices indices11 {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'};
 
   Indices indices12 {'b', 'a', 'c', 'd', 'e', 'f', 'g', 'h'};
@@ -44,19 +44,23 @@ int main () {
 
   Indices indices18 {'e', 'f', 'g', 'h', 'a', 'b', 'c', 'd'};
 
-  Generator gtor2 (indices11, {std::make_pair(indices12, true),
+  Generator gtor (indices11, {std::make_pair(indices12, true),
                                std::make_pair(indices13, true),
                                std::make_pair(indices14, true),
                                std::make_pair(indices15, true),
                                std::make_pair(indices16, false),
                                std::make_pair(indices17, false),
                                std::make_pair(indices18, false)});
+*/
+  Expression expr = gtor.Generate();
 
-  Expression expr = gtor2.Generate();
-
+  std::cout << "Tensor ansatz:" << std::endl;
   std::cout << expr.GetLatexString() << std::endl;
 
-  NumericSimplify(expr, indices11);
+  std::cout << "Singular values of coefficient matrix:" << std::endl;
+  NumericSimplify(expr, indices1);
+
+  std::cout << "Presence of zero (or near-to-zero) singular values indicates rank deficiencies. Conversely, singular values within the same orders of magnitudes indicates that the coefficient matrix is of full rank and the tensor ansätze thus constitute a basis." << std::endl;
 
   return 0;
 }

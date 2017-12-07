@@ -1,5 +1,6 @@
 #pragma once
 
+#include <map>
 #include <memory>
 #include <set>
 #include <string>
@@ -33,6 +34,7 @@ class ScalarSum {
   void Collect();
 
   std::set<size_t> CoefficientSet() const;
+  std::vector<Rational> CoefficientVector(std::map<size_t, size_t> const & coefficient_map) const;
 
   bool operator== (ScalarSum const & other) const;
   bool operator< (ScalarSum const & other) const;
