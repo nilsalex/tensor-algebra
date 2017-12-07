@@ -36,9 +36,7 @@ void NumericSimplify(Expression const & expr, Indices const & indices) {
         std::cout << "Probing index combination " << counter++ << " of " << num_combs << std::endl;
 
       }
-      if (for_pos < indices.size() - 1) {
-        ++for_pos;
-      }
+        for_pos = indices.size() - 1;
     } else {
       numbers[for_pos] = 0;
       if (for_pos == 0) {
