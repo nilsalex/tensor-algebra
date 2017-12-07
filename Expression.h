@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <set>
 #include <vector>
 
 #include "MonomialExpression.h"
@@ -47,6 +48,8 @@ class Expression {
   void ExchangeSymmetrise(Indices const & indices_1, Indices const & indices_2, bool anti = false);
 
   bool ContainsMonomial (MonomialExpression const & monexpr) const;
+
+  std::pair<std::set<size_t>, ScalarSum> EvaluateIndices(Indices const & indices, std::vector<size_t> const & numbers) const;
 
   std::string const GetLatexString(bool upper = true) const;
 

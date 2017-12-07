@@ -1,10 +1,12 @@
 #pragma once
 
+#include <map>
 #include <memory>
 #include <utility>
 #include <vector>
 
 #include "Indices.h"
+#include "Rational.h"
 #include "Tensor.h"
 
 typedef std::pair<std::unique_ptr<Indices>, std::unique_ptr<Tensor>> IndexMappingEntry;
@@ -26,6 +28,8 @@ class MonomialExpression {
   void Sort();
 
   void ExchangeIndices(Indices const & indices1, Indices const & indices2);
+
+  Rational EvaluateIndices(std::map<Index, size_t> const & evaluation_map) const;
 
   bool operator== (MonomialExpression const & other) const { return *index_mapping == *other.index_mapping; };
   bool operator< (MonomialExpression const & other) const { return *index_mapping < *other.index_mapping; };

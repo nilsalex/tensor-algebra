@@ -4,7 +4,7 @@
 #include <iostream>
 
 int main () {
-
+/*
   Indices indices1 {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'p', 'q'};
 
   Indices indices2 {'b', 'a', 'c', 'd', 'e', 'f', 'g', 'h', 'p', 'q'};
@@ -29,7 +29,7 @@ int main () {
                              std::make_pair(indices9, false)});
 
   std::cout << gtor.Generate().GetLatexString() << std::endl;
-/*  
+*/  
   Indices indices11 {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'};
 
   Indices indices12 {'b', 'a', 'c', 'd', 'e', 'f', 'g', 'h'};
@@ -50,7 +50,11 @@ int main () {
                                std::make_pair(indices17, false),
                                std::make_pair(indices18, false)});
 
-  std::cout << gtor2.Generate().GetLatexString() << std::endl;
-*/
+  Expression expr = gtor2.Generate();
+
+  std::cout << expr.GetLatexString() << std::endl;
+
+  std::cout << expr.EvaluateIndices(indices11, std::vector<size_t>({0, 1, 0, 1, 0, 1, 0, 2}) ).second.ToString() << std::endl;
+
   return 0;
 }

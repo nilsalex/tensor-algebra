@@ -99,8 +99,30 @@ void ScalarSum::DivideCoefficient(Rational const & coeff) {
     });
 }
 
+void ScalarSum::MultiplyCoefficient(Rational const & coeff) {
+  if (coeff.IsZero()) {
+    auto scalars_new = std::make_unique<std::vector<std::unique_ptr<Scalar>>>();
+    std::swap(scalars, scalars_new);
+  } else {
+  std::for_each(scalars->begin(), scalars->end(), 
+    [&coeff](auto & a) {
+      a->MultiplyCoefficient(coeff);
+    });
+  }
+}
+
 Rational ScalarSum::Ratio(ScalarSum const & other) const {
   return Rational (scalars->front()->get_coefficient().DivideOther(other.scalars->front()->get_coefficient()));
+}
+
+std::set<size_t> CoefficientSet() {
+  std::set<size_t> ret;
+  std::for_each(scalars->begin(), scalars->end(),
+    []() {
+
+    });
+
+  return ret;
 }
 
 bool ScalarSum::operator==(ScalarSum const & other) const {

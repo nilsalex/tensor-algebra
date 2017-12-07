@@ -1,6 +1,7 @@
 #include "MonomialExpression.h"
 
 #include <algorithm>
+#include <cassert>
 #include <sstream>
 
 bool operator== (IndexMappingEntry const & A, IndexMappingEntry const & B) {
@@ -54,6 +55,44 @@ bool MonomialExpression::ApplySymmetries() {
   }
 
   return even;
+}
+
+Rational MonomialExpression::EvaluateIndices(std::map<Index, size_t> const & evaluation_map) const {
+  int ret = 1;
+  for (auto & entry : *index_mapping) {
+    if (entry.second->get_name() == "eta") {
+      if (evaluation_map.at(entry.first->at(0)) != evaluation_map.at(entry.first->at(1))) {
+        return Rational(0,1);
+      } else if (evaluation_map.at(entry.first->at(0)) > 0) {
+        ret = -ret;
+      }
+    } else if (entry.second->get_name() == "epsilon") {
+      std::vector<size_t> epsilon_eval (4);
+      epsilon_eval[0] = evaluation_map.at(entry.first->at(0));
+      epsilon_eval[1] = evaluation_map.at(entry.first->at(1));
+      epsilon_eval[2] = evaluation_map.at(entry.first->at(2));
+      epsilon_eval[3] = evaluation_map.at(entry.first->at(3));
+
+      if(std::distance(epsilon_eval.begin(), std::unique(epsilon_eval.begin(), epsilon_eval.end())) < 4) {
+        return Rational(0, 1);
+      }
+
+      bool anti = true;
+
+      while (std::next_permutation(epsilon_eval.begin(), epsilon_eval.end())) {
+        anti = !anti;
+      }
+
+      if (anti) {
+        ret = -ret;
+      }
+
+    } else {
+      assert(false);
+    }
+  }
+
+  return Rational(ret, 1);
 }
 
 void MonomialExpression::ExchangeIndices(Indices const & indices1, Indices const & indices2) {

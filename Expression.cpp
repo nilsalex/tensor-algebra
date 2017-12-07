@@ -174,6 +174,29 @@ void Expression::RedefineScalars(std::string const & base_name) {
   std::swap(summands, summands_new);
 }
 
+std::pair<std::set<size_t>, ScalarSum> Expression::EvaluateIndices(Indices const & indices, std::vector<size_t> const & numbers) const {
+  std::map<Index, size_t> evaluation_map;
+
+  for (size_t counter = 0; counter < indices.size(); ++counter) {
+    evaluation_map[indices.at(counter)] = numbers.at(counter);
+  }
+  auto ret = std::make_pair(std::set<size_t>(), ScalarSum());
+  std::for_each(summands->begin(), summands->end(),
+    [&ret, &evaluation_map](auto & a) {
+      ScalarSum new_summand(*(a.second));
+      new_summand.MultiplyCoefficient(a.first->EvaluateIndices(evaluation_map));
+      ret.second.MergeWithOther(new_summand);
+      ret.first.merge(a.second->CoefficientSet());
+    });
+
+  std::cout << ret.second.ToString() << std::endl;
+
+  ret.second.Sort();
+  ret.second.Collect();
+
+  return ret;
+}
+
 std::string const Expression::GetLatexString(bool upper) const {
   std::stringstream ss;
 
