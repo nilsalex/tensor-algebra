@@ -49,7 +49,9 @@ class Expression {
 
   bool ContainsMonomial (MonomialExpression const & monexpr) const;
 
-  std::pair<std::set<size_t>, ScalarSum> EvaluateIndices(Indices const & indices, std::vector<size_t> const & numbers) const;
+  bool IsZero() const { return summands->empty(); };
+
+  ScalarSum EvaluateIndices(Indices const & indices, std::vector<size_t> const & numbers) const;
 
   std::string const GetLatexString(bool upper = true) const;
 

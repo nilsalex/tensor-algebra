@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <cassert>
 #include <string>
 #include <vector>
 
@@ -21,6 +22,7 @@ class Scalar {
 
   Rational get_coefficient() const { return coefficient; };
 
+  size_t VariableNumber() const { assert(variables.size() == 1); return static_cast<size_t>(std::stoi(variables[0].substr(2))); };
 
   void AddOther(Scalar const & other) { coefficient = coefficient.AddOther(other.coefficient); };
   bool CompareVariables(Scalar const & other) const { return variables == other.variables; };

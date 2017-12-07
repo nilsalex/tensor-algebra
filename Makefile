@@ -1,10 +1,10 @@
-CC=g++
+CC=~/.local/bin/g++-7.2
 CFLAGS=-std=c++17 -O3
 
 all: main
 
-main: main.o Rational.o Indices.o Tensor.o TensorMonomial.o Scalar.o ScalarSum.o MonomialExpression.o Expression.o Generator.o MyPermutation.o
-	$(CC) -o main main.o Rational.o Indices.o Tensor.o TensorMonomial.o Scalar.o ScalarSum.o MonomialExpression.o Expression.o Generator.o MyPermutation.o $(CFLAGS)
+main: main.o Rational.o Indices.o Tensor.o TensorMonomial.o Scalar.o ScalarSum.o MonomialExpression.o Expression.o Generator.o MyPermutation.o NumericSimplify.o
+	$(CC) -o main main.o Rational.o Indices.o Tensor.o TensorMonomial.o Scalar.o ScalarSum.o MonomialExpression.o Expression.o Generator.o MyPermutation.o NumericSimplify.o $(CFLAGS)
 
 Rational.o: Rational.cpp Rational.h
 	$(CC) -c -o $@ $< $(CFLAGS)
@@ -36,8 +36,11 @@ Generator.o: Generator.cpp Generator.h Expression.h MonomialExpression.h ScalarS
 MyPermutation.o: MyPermutation.cpp MyPermutation.h NextCombination.h
 	$(CC) -c -o $@ $<  $(CFLAGS)
 
+NumericSimplify.o: NumericSimplify.cpp Expression.h
+	$(CC) -c -o $@ $<  $(CFLAGS)
+
 main.o: main.cpp Rational.h Indices.h Tensor.h TensorMonomial.h Scalar.h ScalarSum.h MonomialExpression.h Expression.h Generator.h
 	$(CC) -c -o $@ $<  $(CFLAGS)
 
 clean:
-	rm -f main.o Indices.o Tensor.o TensorMonomial.o Scalar.o ScalarSum.o MonomialExpression.o Expression.o Rational.o Generator.o MyPermutation.o main
+	rm -f main.o Indices.o Tensor.o TensorMonomial.o Scalar.o ScalarSum.o MonomialExpression.o Expression.o Rational.o Generator.o MyPermutation.o NumericSimplify.o main

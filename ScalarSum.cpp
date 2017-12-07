@@ -115,11 +115,11 @@ Rational ScalarSum::Ratio(ScalarSum const & other) const {
   return Rational (scalars->front()->get_coefficient().DivideOther(other.scalars->front()->get_coefficient()));
 }
 
-std::set<size_t> CoefficientSet() {
+std::set<size_t> ScalarSum::CoefficientSet() const {
   std::set<size_t> ret;
   std::for_each(scalars->begin(), scalars->end(),
-    []() {
-
+    [&ret](auto & a) {
+      ret.insert(a->VariableNumber());
     });
 
   return ret;

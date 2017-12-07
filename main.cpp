@@ -3,6 +3,8 @@
 
 #include <iostream>
 
+void NumericSimplify(Expression const &, Indices const &);
+
 int main () {
 /*
   Indices indices1 {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'p', 'q'};
@@ -54,7 +56,7 @@ int main () {
 
   std::cout << expr.GetLatexString() << std::endl;
 
-  std::cout << expr.EvaluateIndices(indices11, std::vector<size_t>({0, 1, 0, 1, 0, 1, 0, 2}) ).second.ToString() << std::endl;
+  NumericSimplify(expr, indices11);
 
   return 0;
 }
