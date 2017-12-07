@@ -27,13 +27,14 @@ void NumericSimplify(Expression const & expr, Indices const & indices) {
       ++numbers[for_pos];
       {
 
+        std::cout << "Probing index combination " << counter++ << " of " << num_combs << std::endl;
+        std::for_each(numbers.begin(), numbers.end(), [](auto a) { std::cout << a << " "; });
+        std::cout << std::endl;
         ScalarSum sum_tmp = expr.EvaluateIndices(indices, numbers);
         if (!sum_tmp.IsZero()) {
           coefficient_set.merge(sum_tmp.CoefficientSet());
           sum_set.insert(sum_tmp);
         }
-
-        std::cout << "Probing index combination " << counter++ << " of " << num_combs << std::endl;
 
       }
       if (for_pos < indices.size() - 1) {

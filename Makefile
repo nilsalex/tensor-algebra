@@ -1,4 +1,3 @@
-#CC=~/.local/bin/g++-7.2
 CC=g++
 CFLAGS=-std=c++17 -O3 -I/usr/include/eigen3
 
