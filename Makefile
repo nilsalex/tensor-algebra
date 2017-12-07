@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=-std=c++17 -O3 -I/usr/include/eigen3
+CFLAGS=-std=c++17 -O3 -I/usr/include/eigen3 -lgmp
 
 all: main
 
