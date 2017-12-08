@@ -77,7 +77,7 @@ void NumericSimplify(Expression const & expr, Indices const & indices) {
 
   std::cout << "number of different (not necessarily linear independent) equations : " << sum_set.size() << std::endl;
   std::cout << "number of coefficients (e_.) in these equations                    : " << coefficient_map.size() << std::endl;
-  std::cout << "Thus the problem of finding linear dependencies is equivalent to the problem of findinge the null space for a " << sum_set.size() << " by " << coefficient_map.size() << " matrix." << std::endl;
+  std::cout << "Thus the problem of finding linear dependencies is equivalent to the problem of finding the null space for a " << sum_set.size() << " by " << coefficient_map.size() << " matrix." << std::endl;
 
   std::vector<std::vector<Rational>> matrix;
   std::for_each(sum_set.begin(), sum_set.end(), [&coefficient_map, &matrix](auto & a) {

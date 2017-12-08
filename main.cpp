@@ -32,6 +32,7 @@ int main () {
                              std::make_pair(indices9, false)});
 
 */  
+/*
   Indices indices11 {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'};
 
   Indices indices12 {'b', 'a', 'c', 'd', 'e', 'f', 'g', 'h'};
@@ -51,6 +52,45 @@ int main () {
                                std::make_pair(indices16, false),
                                std::make_pair(indices17, false),
                                std::make_pair(indices18, false)});
+*/
+/*
+  Indices indices1 {'a', 'b', 'c', 'd', 'p', 'q'};
+
+  Indices indices2 {'b', 'a', 'c', 'd', 'p', 'q'};
+  Indices indices3 {'a', 'b', 'd', 'c', 'p', 'q'};
+  Indices indices4 {'c', 'd', 'a', 'b', 'p', 'q'};
+  Indices indices5 {'a', 'b', 'c', 'd', 'q', 'p'};
+
+  Generator gtor (indices1, {std::make_pair(indices2, false),
+                             std::make_pair(indices3, false),
+                             std::make_pair(indices4, false),
+                             std::make_pair(indices5, false)});
+*/
+/*
+  Indices indices1 {'a', 'b', 'c', 'd', 'p', 'q'};
+
+  Indices indices2 {'b', 'a', 'c', 'd', 'p', 'q'};
+  Indices indices3 {'a', 'b', 'd', 'c', 'p', 'q'};
+  Indices indices4 {'a', 'b', 'c', 'd', 'q', 'p'};
+
+  Generator gtor (indices1, {std::make_pair(indices2, false),
+                             std::make_pair(indices3, false),
+                             std::make_pair(indices4, false)});
+*/                             
+/*
+  Indices indices1 {'a', 'b', 'c', 'd'};
+  Indices indices2 {'b', 'a', 'c', 'd'};
+  Indices indices3 {'a', 'b', 'd', 'c'};
+  Indices indices4 {'c', 'd', 'a', 'b'};
+
+  Generator gtor (indices1, {std::make_pair(indices2, false),
+                             std::make_pair(indices3, false),
+                             std::make_pair(indices4, false)});
+*/
+
+  Indices indices {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'};
+
+  Generator gtor (indices, {});
 
   Expression expr = gtor.Generate();
 
@@ -58,7 +98,7 @@ int main () {
   std::cout << expr.GetLatexString() << std::endl;
 
   std::cout << "Generating all linear equations by evaluating indices (this may take some time!) ..." << std::endl;
-  NumericSimplify(expr, indices11);
+  NumericSimplify(expr, indices);
 
 //  std::cout << "Presence of zero (or near-to-zero) singular values indicates rank deficiencies. Conversely, singular values within the same orders of magnitudes indicates that the coefficient matrix is of full rank and the tensor ansätze thus constitute a basis." << std::endl;
 
