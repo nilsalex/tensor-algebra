@@ -21,7 +21,6 @@ class Rational {
   Rational DivideOther (Rational const & other) const;
   Rational MultiplyOther (Rational const & other) const;
 
-  void Cancel();
   void DivideByTwo();
   void Negate();
 
@@ -35,7 +34,7 @@ class Rational {
 
   std::string const ToString(bool plus_sign = false) const;
 
-  bool operator== (Rational const & other) const { return this->SubtractOther(other).fraction.first == 0; };
+  bool operator== (Rational const & other) const { return (fraction.first == other.fraction.first) && (fraction.second == other.fraction.second); };
   bool operator!= (Rational const & other) const { return !(*this == other); };
   bool operator< (Rational const & other) const { return this->SubtractOther(other).fraction.first < 0; };
   bool operator> (Rational const & other) const { return other < *this; };

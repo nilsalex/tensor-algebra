@@ -2,10 +2,6 @@
 
 Rational::Rational(Fraction const & fraction_set) : fraction(Cancel(fraction_set)){ }
 
-void Rational::Cancel() {
-  fraction = Cancel(fraction);
-}
-
 void Rational::DivideByTwo() {
   if (fraction.first % 2 == 0) {
     fraction.first = fraction.first / 2;
@@ -66,7 +62,11 @@ Rational Rational::MultiplyOther (Rational const & other) const {
 std::string const Rational::ToString(bool plus_sign) const {
   std::string ret_string = "";
   if (fraction.first == 0) {
-    return "0";
+    if (plus_sign) {
+      return "+ 0";
+    } else {
+      return "0";
+    }
   } else if (fraction.first > 0) {
     if (plus_sign) {
       ret_string += "+ ";

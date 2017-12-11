@@ -51,6 +51,11 @@ void NumericSimplify(Expression const & expr, Indices const & indices) {
         ScalarSum sum_tmp = expr.EvaluateIndices(indices, numbers);
         if (!sum_tmp.IsZero()) {
           coefficient_set.merge(sum_tmp.CoefficientSet());
+          std::cout << "-------------------------------------" << std::endl;
+          std::for_each(numbers.begin(), numbers.end(), [](auto a) { std::cout << a << " "; });
+          std::cout << std::endl;
+          std::cout << sum_tmp.ToString() << std::endl;
+          std::cin.get();
           sum_set.insert(sum_tmp);
         }
 
@@ -65,13 +70,11 @@ void NumericSimplify(Expression const & expr, Indices const & indices) {
       }
     }
   }
-
 /*
   std::for_each(sum_set.begin(), sum_set.end(), [](auto & a) { std::cout << a.ToString() << std::endl; });
   std::for_each(coefficient_set.begin(), coefficient_set.end(), [](auto a) { std::cout << a << " "; });
   std::cout << std::endl;
 */
-
   std::map<size_t, size_t> coefficient_map;
   std::for_each(coefficient_set.begin(), coefficient_set.end(), [n=0,&coefficient_map](auto a) mutable { coefficient_map[a] = n++; });
 
