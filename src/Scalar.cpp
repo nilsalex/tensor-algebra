@@ -2,7 +2,7 @@
 
 #include "Scalar.h"
 
-std::string Scalar::ToString(bool plus_sign) const {
+std::string Scalar::ToString(std::string base_name, bool plus_sign) const {
   std::stringstream ss;
   ss << coefficient.ToString(plus_sign);
 
@@ -11,7 +11,7 @@ std::string Scalar::ToString(bool plus_sign) const {
   }
 
   for (auto variable : variables) {
-    ss << "*" << variable;
+    ss << "*" << base_name << variable;
   }
 
   return ss.str();
@@ -28,6 +28,6 @@ bool Scalar::operator< (Scalar const & other) const {
 };
 
 bool Scalar::operator== (Scalar const & other) const {
-  return (variables == other.variables) && (coefficient == other.coefficient);
+  return (variables == other.variables) && (coefficient == other.coefficient) || (IsZero() && other.IsZero());
 };
 

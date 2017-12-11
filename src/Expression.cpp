@@ -18,11 +18,11 @@ void Expression::AddSummand (MonomialExpression const & monomial_expression, Rat
   AddSummand(monomial_expression, Scalar(rational));
 }
 
-void Expression::AddSummand (MonomialExpression const & monomial_expression, std::string variable) {
+void Expression::AddSummand (MonomialExpression const & monomial_expression, size_t variable) {
   AddSummand(monomial_expression, Scalar(variable));
 }
 
-void Expression::AddSummand (MonomialExpression const & monomial_expression, Rational const & rational, std::string variable) {
+void Expression::AddSummand (MonomialExpression const & monomial_expression, Rational const & rational, size_t variable) {
   AddSummand(monomial_expression, Scalar(rational, variable));
 }
 
@@ -146,13 +146,13 @@ bool Expression::ContainsMonomial (MonomialExpression const & monexpr) const {
   return ret;
 }
 
-void Expression::RedefineScalars(std::string const & base_name) {
+void Expression::RedefineScalars() {
   if (summands->size() == 0) {
     return;
   }
 
   auto summands_new = std::make_unique<Sum>();
-  summands_new->push_back(std::make_pair(std::make_unique<MonomialExpression>(), std::make_unique<ScalarSum>(Scalar(base_name + "_" + std::to_string(1)))));
+  summands_new->push_back(std::make_pair(std::make_unique<MonomialExpression>(), std::make_unique<ScalarSum>(Scalar(1))));
   std::swap(summands->front().first, summands_new->back().first);
   
   size_t variable_counter = 0;
@@ -167,7 +167,7 @@ void Expression::RedefineScalars(std::string const & base_name) {
       ++variable_counter;
       it_last = it;
     }
-    summands_new->push_back(std::make_pair(std::make_unique<MonomialExpression>(), std::make_unique<ScalarSum>(Scalar(coefficient, base_name + "_" + std::to_string(variable_counter + 1)))));
+    summands_new->push_back(std::make_pair(std::make_unique<MonomialExpression>(), std::make_unique<ScalarSum>(Scalar(coefficient, variable_counter + 1))));
     std::swap(it->first, summands_new->back().first);
   }
 
@@ -194,7 +194,7 @@ ScalarSum Expression::EvaluateIndices(Indices const & indices, std::vector<size_
   return ret;
 }
 
-std::string const Expression::GetLatexString(bool upper) const {
+std::string const Expression::GetLatexString(std::string base_name, bool upper) const {
   std::stringstream ss;
 
   bool first = true;
@@ -204,7 +204,7 @@ std::string const Expression::GetLatexString(bool upper) const {
   }
 
   for (auto const & summand : *summands) {
-    ss << summand.second->ToString(!first) << " ";
+    ss << summand.second->ToString(base_name, !first) << " ";
     first = false;
 
     ss << summand.first->GetLatexString(upper) << "\n";

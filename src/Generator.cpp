@@ -27,9 +27,6 @@ Expression Generator::Generate() {
 
   MyPermutation perm(indices.size());
 
-  std::string variable_base_name = "e";
-  std::string variable_index_separator = "_";
-
   auto expression = std::make_unique<Expression>();
   size_t variable_counter = 0;
 
@@ -38,7 +35,7 @@ Expression Generator::Generate() {
 //    std::for_each(ind.cbegin(), ind.cend(), [](auto & a) { std::cout << a << " ";}); std::cout << std::endl;
     Indices indices_perm = indices.Permutation(perm.GetPermutation());
     MonomialExpression monexpr(T, indices_perm);
-    expression->AddSummand(monexpr, variable_base_name + variable_index_separator + std::to_string(++variable_counter));
+    expression->AddSummand(monexpr, ++variable_counter);
     expression->SortMonomials();
   } while (perm.NextIndexPermutation());
 
@@ -72,7 +69,7 @@ Expression Generator::Generate() {
         Indices indices_perm = indices.Permutation(perm_indices);
         MonomialExpression monexpr(S, indices_perm);
 
-        expression->AddSummand(monexpr, variable_base_name + variable_index_separator + std::to_string(++variable_counter));
+        expression->AddSummand(monexpr, ++variable_counter);
         expression->SortMonomials();
       } while (perm_eta.NextIndexPermutation());
     } while (next_combination(perm_epsilon.begin(), perm_epsilon.begin() + 4, perm_epsilon.end()));
@@ -91,7 +88,7 @@ Expression Generator::Generate() {
     });
 
   expression->SortSummandsByPrefactors();
-  expression->RedefineScalars(variable_base_name);
+  expression->RedefineScalars();
 
   return *expression;
 }; 

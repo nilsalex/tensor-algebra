@@ -19,7 +19,7 @@ class ScalarSum {
 
   bool IsZero() const;
 
-  std::string ToString(bool plus_sign = false) const;
+  std::string ToString(std::string base_name = "e_", bool plus_sign = false) const;
   void Negate() { for (auto & scalar : *scalars) { scalar->Negate(); } }; 
   void DivideByTwo() { for (auto & scalar : *scalars) { scalar->DivideByTwo(); } }; 
 

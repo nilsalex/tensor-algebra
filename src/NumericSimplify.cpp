@@ -55,7 +55,7 @@ void NumericSimplify(Expression const & expr, Indices const & indices) {
           std::for_each(numbers.begin(), numbers.end(), [](auto a) { std::cout << a << " "; });
           std::cout << std::endl;
           std::cout << sum_tmp.ToString() << std::endl;
-          std::cin.get();
+//          std::cin.get();
           sum_set.insert(sum_tmp);
         }
 

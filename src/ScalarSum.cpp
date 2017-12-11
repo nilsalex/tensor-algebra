@@ -12,9 +12,17 @@ ScalarSum::ScalarSum(ScalarSum const & other) : scalars(std::make_unique<std::ve
   }
 };
 
-std::string ScalarSum::ToString(bool plus_sign) const {
+std::string ScalarSum::ToString(std::string base_name, bool plus_sign) const {
+  if (IsZero()) {
+    if (plus_sign) {
+      return "+ 0";
+    } else{
+      return "0";
+    }
+  }
+
   if (scalars->size() == 1) {
-    return scalars->at(0)->ToString(plus_sign);
+    return scalars->at(0)->ToString(base_name, plus_sign);
   }
 
   std::stringstream ss;
@@ -27,7 +35,7 @@ std::string ScalarSum::ToString(bool plus_sign) const {
     if (!first) {
       ss << " ";
     }
-    ss << scalar->ToString(!first);
+    ss << scalar->ToString(base_name, !first);
     first = false;
   }
   ss << ")";
@@ -35,10 +43,6 @@ std::string ScalarSum::ToString(bool plus_sign) const {
 }
 
 void ScalarSum::Sort() {
-  for (auto & scalar : *scalars) {
-    scalar->Sort();
-  }
-
   std::sort(scalars->begin(), scalars->end(), 
     [](auto & a, auto & b) {
       return *a < *b;

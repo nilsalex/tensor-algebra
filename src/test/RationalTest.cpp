@@ -33,7 +33,7 @@ TEST(Rational, ConstructorFromFraction) {
   EXPECT_EQ(14, r4.get_fraction().second);
 }
 
-TEST(Rational, ConstructFromNumDenom) {
+TEST(Rational, ConstructorFromNumDenom) {
   const int i1 = 0;
   const unsigned int j1 = 1;
 

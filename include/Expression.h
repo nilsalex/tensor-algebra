@@ -33,14 +33,14 @@ class Expression {
   void AddSummand (MonomialExpression const & monomial_expression, Scalar const & scalar);
   void AddSummand (MonomialExpression const & monomial_expression);
   void AddSummand (MonomialExpression const & monomial_expression, Rational const & rational);
-  void AddSummand (MonomialExpression const & monomial_expression, std::string variable);
-  void AddSummand (MonomialExpression const & monomial_expression, Rational const & rational, std::string variable);
+  void AddSummand (MonomialExpression const & monomial_expression, size_t variable);
+  void AddSummand (MonomialExpression const & monomial_expression, Rational const & rational, size_t variable);
 
   void ApplyMonomialSymmetries();
   void CanonicalisePrefactors();
   void CollectPrefactors();
   void EliminateZeros();
-  void RedefineScalars(std::string const & base_name);
+  void RedefineScalars();
   void SortMonomials();
   void SortSummands();
   void SortSummandsByPrefactors();
@@ -53,7 +53,7 @@ class Expression {
 
   ScalarSum EvaluateIndices(Indices const & indices, std::vector<size_t> const & numbers) const;
 
-  std::string const GetLatexString(bool upper = true) const;
+  std::string const GetLatexString(std::string base_name = "e_", bool upper = true) const;
 
   ~Expression() = default;
 };
