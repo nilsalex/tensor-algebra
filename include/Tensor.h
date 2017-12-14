@@ -34,12 +34,12 @@ class Tensor {
   bool IsAntisymmetric() const { return antisymmetric; };
 
   virtual bool operator< (Tensor const & other) const;
+  virtual bool operator== (Tensor const & other) const;
+  virtual bool operator!= (Tensor const & other) const { return !(*this == other); };
 //  virtual bool operator> (Tensor const & other) const { return other < *this; };
 //  virtual bool operator<= (Tensor const & other) const { return !(other < *this); };
 //  virtual bool operator>= (Tensor const & other) const { return !(*this < other); };
-  virtual bool operator== (Tensor const & other) const;
-//  virtual bool operator!= (Tensor const & other) const { return !(*this == other); };
-
+//
   virtual ~Tensor() = default;
 };
 

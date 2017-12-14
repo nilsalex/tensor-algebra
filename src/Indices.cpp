@@ -22,6 +22,9 @@ void Indices::SortAndMakeUnique() {
 }
 
 bool Indices::Sort() {
+  if (indices.empty()) {
+    return true;
+  }
   unsigned int swap_counter = 0;
   bool swapped;
   do {
@@ -50,6 +53,10 @@ std::string const Indices::ToString() const {
 }
 
 Indices Indices::Permutation(std::vector<size_t> const & permutation) const {
+  if (indices.empty()) {
+    return (Indices());
+  }
+
   Indices indices_new = *this;
 
   for (size_t counter = 0; counter < indices.size(); ++counter) {

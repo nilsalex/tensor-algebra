@@ -24,6 +24,8 @@ class MonomialExpression {
   MonomialExpression(Tensor const & tensor_set, Indices const & indices_set);
   MonomialExpression(MonomialExpression const & other);
 
+  bool IsZero() const;
+
   bool ApplySymmetries();
   void Sort();
 

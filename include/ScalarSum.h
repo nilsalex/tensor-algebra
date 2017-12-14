@@ -28,7 +28,7 @@ class ScalarSum {
 
   Rational Ratio(ScalarSum const & other) const;
 
-  void AddScalar(Scalar const & other) { scalars->push_back(std::make_unique<Scalar>(other)); };
+  void AddScalar(Scalar const & other) { if (!other.IsZero()) { scalars->push_back(std::make_unique<Scalar>(other));} };
   void MergeWithOther(ScalarSum const & other) { scalars->insert(scalars->end(), std::make_move_iterator(other.scalars->begin()), std::make_move_iterator(other.scalars->end())); };
   void Sort();
   void Collect();
@@ -37,6 +37,7 @@ class ScalarSum {
   std::vector<Rational> CoefficientVector(std::map<size_t, size_t> const & coefficient_map) const;
 
   bool operator== (ScalarSum const & other) const;
+  bool operator!= (ScalarSum const & other) const;
   bool operator< (ScalarSum const & other) const;
 
   ~ScalarSum() = default;

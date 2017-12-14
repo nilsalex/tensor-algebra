@@ -1,5 +1,8 @@
 #include <algorithm>
+#include <cassert>
 #include <sstream>
+
+#include <iostream>
 
 #include "Scalar.h"
 #include "ScalarSum.h"
@@ -27,9 +30,9 @@ std::string ScalarSum::ToString(std::string base_name, bool plus_sign) const {
 
   std::stringstream ss;
   if (plus_sign) {
-    ss << "+";
+    ss << "+ ";
   }
-  ss << " (";
+  ss << "(";
   bool first = true;
   for (auto & scalar : *scalars) {
     if (!first) {
@@ -133,15 +136,40 @@ std::vector<Rational> ScalarSum::CoefficientVector(std::map<size_t, size_t> cons
   std::vector<Rational> ret(coefficient_map.size());
   std::for_each(scalars->begin(), scalars->end(),
     [&ret,&coefficient_map](auto & a) {
-      ret[coefficient_map.at(a->VariableNumber())] = a->get_coefficient();
+      size_t var_number = coefficient_map.at(a->VariableNumber());
+      ret[var_number] = ret[var_number].AddOther(a->get_coefficient());
     });
 
   return ret;
 }
 
 bool ScalarSum::operator==(ScalarSum const & other) const {
-  Rational ratio (scalars->front()->get_coefficient().DivideOther(other.scalars->front()->get_coefficient()));
-  return std::equal(scalars->cbegin(), scalars->cend(), other.scalars->cbegin(), other.scalars->cend(),
+  ScalarSum this_copy (*this);
+  ScalarSum other_copy (other);
+
+  assert(this->ToString() == this_copy.ToString());
+
+  assert(other.ToString() == other_copy.ToString());
+
+  this_copy.Sort();
+  other_copy.Sort();
+
+  this_copy.Collect();
+  other_copy.Collect();
+
+  bool this_zero = this_copy.IsZero();
+  bool other_zero = other_copy.IsZero();
+
+  if (this_zero && other_zero) {
+    return true;
+  }
+
+  if (this_zero != other_zero) {
+    return false;
+  }
+
+  Rational ratio (this_copy.scalars->front()->get_coefficient().DivideOther(other_copy.scalars->front()->get_coefficient()));
+  return std::equal(this_copy.scalars->cbegin(), this_copy.scalars->cend(), other_copy.scalars->cbegin(), other_copy.scalars->cend(),
     [&ratio](auto & a, auto & b) {
       Scalar b_tmp = *b;
       b_tmp.MultiplyCoefficient(ratio);
@@ -149,8 +177,25 @@ bool ScalarSum::operator==(ScalarSum const & other) const {
     });
 }
 
+bool ScalarSum::operator!=(ScalarSum const & other) const {
+  return !(*this == other);
+}
+
 bool ScalarSum::operator<(ScalarSum const & other) const {
-  return std::lexicographical_compare(this->scalars->cbegin(), this->scalars->cend(), other.scalars->cbegin(), other.scalars->cend(),
+  ScalarSum this_copy (*this);
+  ScalarSum other_copy (other);
+
+  assert(this->ToString() == this_copy.ToString());
+
+  assert(other.ToString() == other_copy.ToString());
+
+  this_copy.Sort();
+  other_copy.Sort();
+
+  this_copy.Collect();
+  other_copy.Collect();
+
+  return std::lexicographical_compare(this_copy.scalars->cbegin(), this_copy.scalars->cend(), other_copy.scalars->cbegin(), other_copy.scalars->cend(),
     [] (auto & a, auto & b) {
       return *a < *b;
     });

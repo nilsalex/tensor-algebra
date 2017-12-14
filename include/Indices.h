@@ -32,6 +32,7 @@ class Indices {
   Indices SubIndices(size_t start, size_t len) const;
 
   bool operator== (Indices const & other) const { return indices == other.indices; };
+  bool operator!= (Indices const & other) const { return !(*this == other); };
   bool operator< (Indices const & other) const { return indices < other.indices; };
 
   ~Indices() = default;
