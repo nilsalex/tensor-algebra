@@ -7,7 +7,7 @@ void NumericSimplify(Expression const &, Indices const &);
 
 int main () {
 
-/*
+
   Indices indices1 {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'p', 'q'};
 
   Indices indices2 {'b', 'a', 'c', 'd', 'e', 'f', 'g', 'h', 'p', 'q'};
@@ -30,8 +30,8 @@ int main () {
                              std::make_pair(indices7, false),
                              std::make_pair(indices8, false),
                              std::make_pair(indices9, false)});
-*/
-  
+
+/*  
 
   Indices indices11 {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'};
 
@@ -52,7 +52,7 @@ int main () {
                                std::make_pair(indices16, false),
                                std::make_pair(indices17, false),
                                std::make_pair(indices18, false)});
-
+*/
 /*
   Indices indices1 {'a', 'b', 'c', 'd', 'p', 'q'};
 
@@ -98,7 +98,7 @@ int main () {
   std::cout << expr.GetLatexString() << std::endl;
 
   std::cout << "Generating all linear equations by evaluating indices (this may take some time!) ..." << std::endl;
-  NumericSimplify(expr, indices11);
+  NumericSimplify(expr, indices1);
 
   return 0;
 }

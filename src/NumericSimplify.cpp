@@ -31,9 +31,6 @@ void NumericSimplify(Expression const & expr, Indices const & indices) {
   size_t counter = 0;
   size_t num_combs = pow(4, indices.size());
 
-//        std::cout << "Probing index combination " << counter++ << " of " << num_combs << std::endl;
-//        std::for_each(numbers.begin(), numbers.end(), [](auto a) { std::cout << a << " "; });
-//        std::cout << std::endl;
         ScalarSum sum_tmp = expr.EvaluateIndices(indices, numbers);
         if (!sum_tmp.IsZero()) {
           coefficient_set.merge(sum_tmp.CoefficientSet());
@@ -45,17 +42,9 @@ void NumericSimplify(Expression const & expr, Indices const & indices) {
       ++numbers[for_pos];
       {
 
-//        std::cout << "Probing index combination " << counter++ << " of " << num_combs << std::endl;
-//        std::for_each(numbers.begin(), numbers.end(), [](auto a) { std::cout << a << " "; });
-//        std::cout << std::endl;
         ScalarSum sum_tmp = expr.EvaluateIndices(indices, numbers);
         if (!sum_tmp.IsZero()) {
           coefficient_set.merge(sum_tmp.CoefficientSet());
-          std::cout << "-------------------------------------" << std::endl;
-          std::for_each(numbers.begin(), numbers.end(), [](auto a) { std::cout << a << " "; });
-          std::cout << std::endl;
-          std::cout << sum_tmp.ToString() << std::endl;
-//          std::cin.get();
           sum_set.insert(sum_tmp);
         }
 
