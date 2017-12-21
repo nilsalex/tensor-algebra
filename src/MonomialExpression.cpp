@@ -265,6 +265,24 @@ std::map<size_t, int> epsilon_eval {
 { 3 * 64 + 3 * 16 + 3 * 4 + 2 , 0},
 { 3 * 64 + 3 * 16 + 3 * 4 + 3 , 0}};
 
+std::map<size_t, int> eta_eval {
+{ 0 * 4 + 0 , 1},
+{ 0 * 4 + 1 , 0},
+{ 0 * 4 + 2 , 0},
+{ 0 * 4 + 3 , 0},
+{ 1 * 4 + 0 , 0},
+{ 1 * 4 + 1 , -1},
+{ 1 * 4 + 2 , 0},
+{ 1 * 4 + 3 , 0},
+{ 2 * 4 + 0 , 0},
+{ 2 * 4 + 1 , 0},
+{ 2 * 4 + 2 , -1},
+{ 2 * 4 + 3 , 0},
+{ 3 * 4 + 0 , 0},
+{ 3 * 4 + 1 , 0},
+{ 3 * 4 + 2 , 0},
+{ 3 * 4 + 3 , -1}};
+
 bool operator== (IndexMappingEntry const & A, IndexMappingEntry const & B) {
   return (*A.first == *B.first) && (*A.second == *B.second);;
 }
@@ -324,11 +342,14 @@ bool MonomialExpression::ApplySymmetries() {
 
 Rational MonomialExpression::EvaluateIndices(std::map<Index, size_t> const & evaluation_map) const {
   int ret = 1;
+  int tensor_counter = 0;
   for (auto & entry : *index_mapping) {
     if (entry.second->get_name() == "eta") {
-      if (evaluation_map.at(entry.first->at(0)) != evaluation_map.at(entry.first->at(1))) {
+      int tmp_value = eta_eval[   4 * evaluation_map.at(entry.first->at(0))
+                                +     evaluation_map.at(entry.first->at(1))  ];
+      if (tmp_value == 0) {
         return Rational(0,1);
-      } else if (evaluation_map.at(entry.first->at(0)) > 0) {
+      } else if (tmp_value == -1) {
         ret = -ret;
       }
     } else if (entry.second->get_name() == "epsilon") {

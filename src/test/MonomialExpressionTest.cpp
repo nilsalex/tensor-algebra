@@ -429,4 +429,15 @@ TEST(MonomialExpression, EvaluateIndices) {
   EXPECT_EQ(Rational(0, 1), m2.EvaluateIndices (std::map<Index, size_t> {{Index::a, 3}, {Index::b, 3}, {Index::i, 3}, {Index::z, 2}}) );
   EXPECT_EQ(Rational(0, 1), m2.EvaluateIndices (std::map<Index, size_t> {{Index::a, 3}, {Index::b, 3}, {Index::i, 3}, {Index::z, 3}}) );
 
+  TensorMonomial tm3;
+  tm3.AddFactorRight (eta);
+  tm3.AddFactorRight (eta);
+  MonomialExpression m3 (tm3, Indices {'a', 'b', 'c', 'd'});
+
+  EXPECT_EQ(Rational(1, 1), m3.EvaluateIndices (std::map<Index, size_t> {{Index::a, 0}, {Index::b, 0}, {Index::c, 0}, {Index::d, 0}}) );
+  EXPECT_EQ(Rational(-1, 1), m3.EvaluateIndices (std::map<Index, size_t> {{Index::a, 0}, {Index::b, 0}, {Index::c, 1}, {Index::d, 1}}) );
+  EXPECT_EQ(Rational(1, 1), m3.EvaluateIndices (std::map<Index, size_t> {{Index::a, 1}, {Index::b, 1}, {Index::c, 1}, {Index::d, 1}}) );
+  EXPECT_EQ(Rational(0, 1), m3.EvaluateIndices (std::map<Index, size_t> {{Index::a, 0}, {Index::b, 0}, {Index::c, 2}, {Index::d, 0}}) );
+  EXPECT_EQ(Rational(0, 1), m3.EvaluateIndices (std::map<Index, size_t> {{Index::a, 3}, {Index::b, 1}, {Index::c, 1}, {Index::d, 0}}) );
+  EXPECT_EQ(Rational(1, 1), m3.EvaluateIndices (std::map<Index, size_t> {{Index::a, 2}, {Index::b, 2}, {Index::c, 3}, {Index::d, 3}}) );
 }
