@@ -1,5 +1,7 @@
 #include "TensorMonomial.h"
 
+TensorMonomial::TensorMonomial () : Tensor(0) { }
+
 std::vector<std::pair<std::unique_ptr<Indices>, std::unique_ptr<Tensor>>> TensorMonomial::GetIndexMapping (Indices const & indices) const {
   std::vector<std::pair<std::unique_ptr<Indices>, std::unique_ptr<Tensor>>> ret;
 

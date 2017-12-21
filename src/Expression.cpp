@@ -6,6 +6,18 @@
 #include "Scalar.h"
 #include "ScalarSum.h"
 
+Expression::Expression() : summands(std::make_unique<std::vector<Summand>>()) { }
+
+Expression::Expression(Expression const & other) : summands(std::make_unique<Sum>()) {
+  std::for_each(other.summands->cbegin(), other.summands->cend(), [this](auto const & it) {
+    summands->push_back(std::pair<std::unique_ptr<MonomialExpression>, std::unique_ptr<ScalarSum>>());
+    auto monexp_new = std::make_unique<MonomialExpression>(*(it.first));
+    auto scalar_new = std::make_unique<ScalarSum>(*(it.second));
+    std::swap((*(--summands->end())).first, monexp_new);
+    std::swap((*(--summands->end())).second, scalar_new);
+  });
+}
+
 void Expression::AddSummand (MonomialExpression const & monomial_expression, Scalar const & scalar) {
   summands->push_back(std::make_pair(std::make_unique<MonomialExpression>(monomial_expression), std::make_unique<ScalarSum>(scalar)));
 }
@@ -194,6 +206,8 @@ ScalarSum Expression::EvaluateIndices(Indices const & indices, std::vector<size_
   return ret;
 }
 
+bool Expression::IsZero() const { return summands->empty(); }
+
 std::string const Expression::GetLatexString(std::string base_name, bool upper) const {
   std::stringstream ss;
 
@@ -204,10 +218,13 @@ std::string const Expression::GetLatexString(std::string base_name, bool upper) 
   }
 
   for (auto const & summand : *summands) {
+    if (!first) {
+      ss << std::endl;
+    }
     ss << summand.second->ToString(base_name, !first) << " ";
     first = false;
 
-    ss << summand.first->GetLatexString(upper) << "\n";
+    ss << summand.first->GetLatexString(upper);
   }
 
   return ss.str();

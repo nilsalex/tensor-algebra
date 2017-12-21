@@ -1,6 +1,16 @@
 #include "Rational.h"
 
+Rational::Rational() : Rational(std::make_pair(0, 1)) { }
+
 Rational::Rational(Fraction const & fraction_set) : fraction(Cancel(fraction_set)){ }
+
+Rational::Rational(int numerator, unsigned int denominator) : Rational(std::make_pair(numerator, denominator)) { }
+
+Fraction Rational::get_fraction() const { return fraction; }
+
+bool Rational::IsPositive() const { return fraction.first > 0; }
+bool Rational::IsNegative() const { return fraction.first < 0; }
+bool Rational::IsZero()     const { return fraction.first == 0; }
 
 void Rational::DivideByTwo() {
   if (fraction.first % 2 == 0) {
@@ -86,3 +96,11 @@ std::string const Rational::ToString(bool plus_sign) const {
 
   return ret_string;
 } 
+
+bool Rational::operator== (Rational const & other) const { return (fraction.first == other.fraction.first) && (fraction.second == other.fraction.second); }
+bool Rational::operator!= (Rational const & other) const { return !(*this == other); }
+bool Rational::operator< (Rational const & other) const { return this->SubtractOther(other).fraction.first < 0; }
+bool Rational::operator> (Rational const & other) const { return other < *this; }
+bool Rational::operator<= (Rational const & other) const { return !(*this > other); }
+bool Rational::operator>= (Rational const & other) const { return !(*this < other); }
+

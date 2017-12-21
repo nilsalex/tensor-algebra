@@ -7,13 +7,21 @@
 #include "Scalar.h"
 #include "ScalarSum.h"
 
+ScalarSum::ScalarSum() : scalars(std::make_unique<std::vector<std::unique_ptr<Scalar>>>()) { }
+ScalarSum::ScalarSum(Scalar const & scalar) : scalars(std::make_unique<std::vector<std::unique_ptr<Scalar>>>()) { scalars->push_back(std::make_unique<Scalar>(scalar)); }
+
+void ScalarSum::Negate() { for (auto & scalar : *scalars) { scalar->Negate(); } };
+void ScalarSum::DivideByTwo() { for (auto & scalar : *scalars) { scalar->DivideByTwo(); } };
+
+void ScalarSum::AddScalar(Scalar const & other) { if (!other.IsZero()) { scalars->push_back(std::make_unique<Scalar>(other));} }
+void ScalarSum::MergeWithOther(ScalarSum const & other) { scalars->insert(scalars->end(), std::make_move_iterator(other.scalars->begin()), std::make_move_iterator(other.scalars->end())); }
 ScalarSum::ScalarSum(ScalarSum const & other) : scalars(std::make_unique<std::vector<std::unique_ptr<Scalar>>>()) { 
   for (auto & scalar : *(other.scalars)) {
     auto scalar_new = std::make_unique<Scalar>(*scalar);
     scalars->push_back(std::make_unique<Scalar>());
     std::swap(*(--scalars->end()), scalar_new);
   }
-};
+}
 
 std::string ScalarSum::ToString(std::string base_name, bool plus_sign) const {
   if (IsZero()) {

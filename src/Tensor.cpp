@@ -1,5 +1,20 @@
 #include "Tensor.h"
 
+Tensor::Tensor () : rank(0), name("") { }
+
+Tensor::Tensor (Tensor const & other) : rank(other.rank), name(other.name), symmetric(other.symmetric), antisymmetric(other.antisymmetric) { }
+
+Tensor::Tensor (int rank_set, std::string name_set) : rank(rank_set), name(name_set) { }
+
+std::string Tensor::get_name () const { return name; }
+size_t Tensor::get_rank() const { return rank; }
+
+void Tensor::SetSymmetric() { symmetric = true; }
+void Tensor::SetAntisymmetric() { antisymmetric = true; }
+
+bool Tensor::IsSymmetric() const { return symmetric; }
+bool Tensor::IsAntisymmetric() const { return antisymmetric; }
+
 std::vector<std::pair<std::unique_ptr<Indices>, std::unique_ptr<Tensor>>> Tensor::GetIndexMapping(Indices const & indices) const {
   std::vector<std::pair<std::unique_ptr<Indices>, std::unique_ptr<Tensor>>> ret;
   ret.push_back(std::make_pair(std::make_unique<Indices>(indices), std::make_unique<Tensor>(*this)));
@@ -10,6 +25,8 @@ std::vector<std::pair<std::unique_ptr<Indices>, std::unique_ptr<Tensor>>> Tensor
 bool Tensor::operator== (Tensor const & other) const {
   return (this->rank == other.rank) && (this->name == other.name);
 }
+
+bool Tensor::operator!= (Tensor const & other) const { return !(*this == other); }
 
 bool Tensor::operator< (Tensor const & other) const {
   if (this->name < other.name) {

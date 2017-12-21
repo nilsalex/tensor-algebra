@@ -13,30 +13,30 @@ class Scalar {
   Rational coefficient;
 
  public:
-  Scalar() : variables(), coefficient(1,1) { };
-  Scalar(Scalar const & other) : variables(other.variables), coefficient(other.coefficient) { };
+  Scalar();
+  Scalar(Scalar const & other);
 
-  Scalar(Rational const & coefficient_set) : variables(), coefficient(coefficient_set) { };
-  Scalar(size_t variable_set) : variables(), coefficient(1,1) { variables.insert(variable_set); };
-  Scalar(Rational coefficient_set, size_t variable_set) : variables(), coefficient(coefficient_set) { variables.insert(variable_set); };
+  Scalar(Rational const & coefficient_set);
+  Scalar(size_t variable_set);
+  Scalar(Rational coefficient_set, size_t variable_set);
 
-  Rational get_coefficient() const { return coefficient; };
+  Rational get_coefficient() const;
 
-  size_t Order() const { return (IsZero() ? 0 : variables.size()); };
+  size_t Order() const;
 
-  size_t VariableNumber() const { assert(variables.size() == 1); return *(variables.begin()); };
+  size_t VariableNumber() const;
 
-  void AddOther(Scalar const & other) { assert(CompareVariables(other)); coefficient = coefficient.AddOther(other.coefficient); };
-  bool CompareVariables(Scalar const & other) const { return variables == other.variables; };
-  bool IsZero() const { return coefficient.IsZero(); };
+  void AddOther(Scalar const & other);
+  bool CompareVariables(Scalar const & other) const;
+  bool IsZero() const;
 
-  void MultiplyCoefficient(Rational const & coeff) { coefficient = coefficient.MultiplyOther(coeff); };
-  void DivideCoefficient(Rational const & coeff) { coefficient = coefficient.DivideOther(coeff); };
+  void MultiplyCoefficient(Rational const & coeff);
+  void DivideCoefficient(Rational const & coeff);
 
   std::string ToString(std::string base_name = "e_", bool plus_sign = false) const;
 
-  void DivideByTwo() { coefficient.DivideByTwo(); };
-  void Negate() { coefficient.Negate(); };
+  void DivideByTwo();
+  void Negate();
 
   bool operator== (Scalar const & other) const;
   bool operator< (Scalar const & other) const;

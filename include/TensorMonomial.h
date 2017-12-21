@@ -12,14 +12,11 @@ class TensorMonomial : public Tensor {
   std::vector<std::unique_ptr<Tensor>> factors;
 
  public:
-  TensorMonomial () : Tensor(0) { };
+  TensorMonomial ();
 
   void AddFactorRight (Tensor const & factor);
 
   virtual std::vector<std::pair<std::unique_ptr<Indices>, std::unique_ptr<Tensor>>> GetIndexMapping (Indices const & indices) const;
-
-//  virtual bool operator< (Tensor const & other) const;
-//  virtual bool operator= (Tensor const & other) const;
 
   virtual ~TensorMonomial() = default;
 };

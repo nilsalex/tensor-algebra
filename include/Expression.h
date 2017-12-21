@@ -18,23 +18,14 @@ class Expression {
   std::unique_ptr<Sum> summands;
 
  public:
-  Expression() : summands(std::make_unique<std::vector<Summand>>()) { };
+  Expression();
+  Expression(Expression const & other); 
 
-  Expression(Expression const & other) : summands(std::make_unique<Sum>()) {
-    std::for_each(std::make_move_iterator(other.summands->begin()), std::make_move_iterator(other.summands->end()), [this](auto it) {
-      summands->push_back(std::pair<std::unique_ptr<MonomialExpression>, std::unique_ptr<ScalarSum>>());
-      auto monexp_new = std::make_unique<MonomialExpression>(*(it.first));
-      auto scalar_new = std::make_unique<ScalarSum>(*(it.second));
-      std::swap((*(--summands->end())).first, monexp_new);
-      std::swap((*(--summands->end())).second, scalar_new);
-    });
-  };
-
-  void AddSummand (MonomialExpression const & monomial_expression, Scalar const & scalar);
   void AddSummand (MonomialExpression const & monomial_expression);
   void AddSummand (MonomialExpression const & monomial_expression, Rational const & rational);
   void AddSummand (MonomialExpression const & monomial_expression, size_t variable);
   void AddSummand (MonomialExpression const & monomial_expression, Rational const & rational, size_t variable);
+  void AddSummand (MonomialExpression const & monomial_expression, Scalar const & scalar);
 
   void ApplyMonomialSymmetries();
   void CanonicalisePrefactors();
@@ -49,7 +40,7 @@ class Expression {
 
   bool ContainsMonomial (MonomialExpression const & monexpr) const;
 
-  bool IsZero() const { return summands->empty(); };
+  bool IsZero() const;
 
   ScalarSum EvaluateIndices(Indices const & indices, std::vector<size_t> const & numbers) const;
 

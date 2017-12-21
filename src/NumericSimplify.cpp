@@ -59,11 +59,7 @@ void NumericSimplify(Expression const & expr, Indices const & indices) {
       }
     }
   }
-/*
-  std::for_each(sum_set.begin(), sum_set.end(), [](auto & a) { std::cout << a.ToString() << std::endl; });
-  std::for_each(coefficient_set.begin(), coefficient_set.end(), [](auto a) { std::cout << a << " "; });
-  std::cout << std::endl;
-*/
+
   std::map<size_t, size_t> coefficient_map;
   std::for_each(coefficient_set.begin(), coefficient_set.end(), [n=0,&coefficient_map](auto a) mutable { coefficient_map[a] = n++; });
 
@@ -76,15 +72,6 @@ void NumericSimplify(Expression const & expr, Indices const & indices) {
     matrix.push_back(a.CoefficientVector(coefficient_map));
     });
 
-/*
-  std::for_each(matrix.begin(), matrix.end(), [](auto & a) {
-    std::for_each(a.begin(), a.end(), [](auto & b) {
-      std::cout << b.ToString() << "\t";
-    });
-    std::cout << std::endl;
-  });
-*/
-
   MatrixXq mq(matrix.size(), coefficient_map.size());
 
   for (unsigned int row_counter = 0; row_counter < matrix.size(); ++row_counter) {
@@ -93,18 +80,6 @@ void NumericSimplify(Expression const & expr, Indices const & indices) {
       mq(row_counter, column_counter) = mpq_class(frac.first, frac.second);
     }
   }
-
-/*
-  auto svd = Eigen::BDCSVD(m, Eigen::ComputeFullV);
-
-  auto sv = svd.singularValues();
-  for (size_t counter = 0; counter < sv.size(); ++counter) {
-    std::cout << sv(counter) << std::endl;
-  }
-
-  auto V = svd.matrixV();
-  std::cout << V << std::endl;
-*/
 
   Eigen::FullPivLU<MatrixXq> lu_decompq(mq);
 

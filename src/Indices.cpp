@@ -2,6 +2,8 @@
 
 #include "Indices.h"
 
+Indices::Indices(std::initializer_list<Index> list) : indices(list) { }
+
 Indices::Indices(std::initializer_list<char> list) {
   indices.resize(list.size());
   std::transform(list.begin(), list.end(), indices.begin(),
@@ -9,6 +11,8 @@ Indices::Indices(std::initializer_list<char> list) {
       return static_cast<Index>(c - 97);
     });
 }
+
+Indices::Indices(Indices const & other) : indices(other.indices) { }
 
 Indices::Indices(Indices const & other, std::map<Index, Index> const & exchange_map) : indices(std::vector<Index>()){
   for (Index index : other.indices) {
@@ -39,6 +43,9 @@ bool Indices::Sort() {
   } while (swapped);
   return (swap_counter % 2 == 0) ? true : false; 
 }
+
+size_t Indices::size() const { return indices.size(); }
+Index Indices::at(size_t pos) const { return indices.at(pos); }
 
 std::string const Indices::ToString() const {
   std::string return_string("");
@@ -72,3 +79,6 @@ Indices Indices::SubIndices(size_t start, size_t len) const {
   return indices_ret;
 }
 
+bool Indices::operator== (Indices const & other) const { return indices == other.indices; }
+bool Indices::operator!= (Indices const & other) const { return !(*this == other); }
+bool Indices::operator< (Indices const & other) const { return indices < other.indices; }

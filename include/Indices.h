@@ -14,26 +14,26 @@ class Indices {
 
  public:
   Indices() = default;
-  Indices(std::initializer_list<Index> list) : indices(list) { };
+  Indices(std::initializer_list<Index> list);
   Indices(std::initializer_list<char> list);
 
-  Indices(Indices const & other) : indices(other.indices) { };
+  Indices(Indices const & other);
   Indices(Indices const & other, std::map<Index, Index> const & exchange_map);
 
   void SortAndMakeUnique();
   std::string const ToString() const;
 
-  size_t const size() const { return indices.size(); };
-  Index at(size_t pos) const { return indices.at(pos); };
+  size_t size() const;
+  Index at(size_t pos) const;
 
   bool Sort();
 
   Indices Permutation(std::vector<size_t> const & permutation) const;
   Indices SubIndices(size_t start, size_t len) const;
 
-  bool operator== (Indices const & other) const { return indices == other.indices; };
-  bool operator!= (Indices const & other) const { return !(*this == other); };
-  bool operator< (Indices const & other) const { return indices < other.indices; };
+  bool operator== (Indices const & other) const;
+  bool operator!= (Indices const & other) const;
+  bool operator< (Indices const & other) const;
 
   ~Indices() = default;
 };

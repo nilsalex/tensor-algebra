@@ -13,23 +13,23 @@ class ScalarSum {
   std::unique_ptr<std::vector<std::unique_ptr<Scalar>>> scalars;
  
  public:
-  ScalarSum() : scalars(std::make_unique<std::vector<std::unique_ptr<Scalar>>>()) { } ;
+  ScalarSum();
   ScalarSum(ScalarSum const & other);
-  ScalarSum(Scalar const & scalar) : scalars(std::make_unique<std::vector<std::unique_ptr<Scalar>>>()) { scalars->push_back(std::make_unique<Scalar>(scalar)); };
+  ScalarSum(Scalar const & scalar);
 
   bool IsZero() const;
 
   std::string ToString(std::string base_name = "e_", bool plus_sign = false) const;
-  void Negate() { for (auto & scalar : *scalars) { scalar->Negate(); } }; 
-  void DivideByTwo() { for (auto & scalar : *scalars) { scalar->DivideByTwo(); } }; 
+  void Negate();
+  void DivideByTwo();
 
   void DivideCoefficient(Rational const & coeff);
   void MultiplyCoefficient(Rational const & coeff);
 
   Rational Ratio(ScalarSum const & other) const;
 
-  void AddScalar(Scalar const & other) { if (!other.IsZero()) { scalars->push_back(std::make_unique<Scalar>(other));} };
-  void MergeWithOther(ScalarSum const & other) { scalars->insert(scalars->end(), std::make_move_iterator(other.scalars->begin()), std::make_move_iterator(other.scalars->end())); };
+  void AddScalar(Scalar const & other);
+  void MergeWithOther(ScalarSum const & other);
   void Sort();
   void Collect();
 

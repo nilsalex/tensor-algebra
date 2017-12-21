@@ -441,3 +441,115 @@ TEST(MonomialExpression, EvaluateIndices) {
   EXPECT_EQ(Rational(0, 1), m3.EvaluateIndices (std::map<Index, size_t> {{Index::a, 3}, {Index::b, 1}, {Index::c, 1}, {Index::d, 0}}) );
   EXPECT_EQ(Rational(1, 1), m3.EvaluateIndices (std::map<Index, size_t> {{Index::a, 2}, {Index::b, 2}, {Index::c, 3}, {Index::d, 3}}) );
 }
+
+TEST(MonomialExpression, GetLatexString) {
+  const Tensor t1 (3, "A");
+  const Tensor t2 (2, "Y");
+  const Tensor t3 (5, "the ting goes skrrra");
+  const Tensor t4 (0, "");
+
+  TensorMonomial tm;
+  tm.AddFactorRight(t1);
+  tm.AddFactorRight(t3);
+  tm.AddFactorRight(t2);
+  tm.AddFactorRight(t4);
+
+  Indices i1 {'a', 'b', 'e'};
+  Indices i2 {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'};
+
+  const MonomialExpression m1 (t1, i1);
+  const MonomialExpression m2 (tm, i2);
+
+  EXPECT_EQ("A^{ a b e }", m1.GetLatexString());
+  EXPECT_EQ("A^{ a b c } the ting goes skrrra^{ d e f g h } Y^{ i j } ^{ }", m2.GetLatexString());
+
+  EXPECT_EQ("A^{ a b e }", m1.GetLatexString(true));
+  EXPECT_EQ("A^{ a b c } the ting goes skrrra^{ d e f g h } Y^{ i j } ^{ }", m2.GetLatexString(true));
+
+  EXPECT_EQ("A_{ a b e }", m1.GetLatexString(false));
+  EXPECT_EQ("A_{ a b c } the ting goes skrrra_{ d e f g h } Y_{ i j } _{ }", m2.GetLatexString(false));
+}
+
+TEST(MonomialExpression, equals) {
+  const Tensor t1 (3, "A");
+  const Tensor t2 (2, "Y");
+  const Tensor t3 (5, "the ting goes skrrra");
+  const Tensor t4 (0, "");
+  const Tensor t5 (3, "A");
+  const Tensor t6 (2, "Y");
+  const Tensor t7 (5, "the ting goes skrrra");
+  const Tensor t8 (0, "");
+
+  TensorMonomial tm1;
+  tm1.AddFactorRight(t1);
+  tm1.AddFactorRight(t3);
+  tm1.AddFactorRight(t2);
+  tm1.AddFactorRight(t4);
+
+  TensorMonomial tm2;
+  tm2.AddFactorRight(t5);
+  tm2.AddFactorRight(t7);
+  tm2.AddFactorRight(t6);
+  tm2.AddFactorRight(t8);
+
+  Indices i1 {'a', 'b', 'e'};
+  Indices i2 {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'};
+  Indices i3 {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'};
+
+  const MonomialExpression m1 (t1, i1);
+  const MonomialExpression m2 (tm1, i2);
+  const MonomialExpression m3 (tm2, i3);
+  
+  EXPECT_EQ(m1, m1);
+  EXPECT_NE(m1, m2);
+  EXPECT_NE(m1, m3);
+
+  EXPECT_NE(m2, m1);
+  EXPECT_EQ(m2, m2);
+  EXPECT_EQ(m2, m3);
+
+  EXPECT_NE(m3, m1);
+  EXPECT_EQ(m3, m2);
+  EXPECT_EQ(m3, m3);
+}
+
+TEST(MonomialExpression, lessThan) {
+  const Tensor t1 (3, "A");
+  const Tensor t2 (2, "Y");
+  const Tensor t3 (5, "the ting goes skrrra");
+  const Tensor t4 (0, "");
+  const Tensor t5 (3, "A");
+  const Tensor t6 (2, "Y");
+  const Tensor t7 (5, "the ting goes skrrra");
+
+  TensorMonomial tm1;
+  tm1.AddFactorRight(t1);
+  tm1.AddFactorRight(t3);
+  tm1.AddFactorRight(t2);
+  tm1.AddFactorRight(t4);
+
+  TensorMonomial tm2;
+  tm2.AddFactorRight(t5);
+  tm2.AddFactorRight(t7);
+  tm2.AddFactorRight(t6);
+
+  Indices i1 {'a', 'e'};
+  Indices i2 {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'};
+  Indices i3 {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'};
+
+  const MonomialExpression m1 (t2, i1);
+  const MonomialExpression m2 (tm1, i2);
+  const MonomialExpression m3 (tm2, i3);
+  
+  EXPECT_FALSE(m1 < m1);
+  EXPECT_FALSE(m1 < m2);
+  EXPECT_FALSE(m1 < m3);
+  
+  EXPECT_TRUE(m2 < m1);
+  EXPECT_FALSE(m2 < m2);
+  EXPECT_FALSE(m2 < m3);
+  
+  EXPECT_TRUE(m3 < m1);
+  EXPECT_TRUE(m3 < m2);
+  EXPECT_FALSE(m3 < m3);
+}
