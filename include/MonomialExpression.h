@@ -20,7 +20,7 @@ class MonomialExpression {
   std::unique_ptr<IndexMapping> index_mapping;
 
  public:
-  MonomialExpression() : index_mapping(std::make_unique<IndexMapping>()) { };
+  MonomialExpression();
   MonomialExpression(Tensor const & tensor_set, Indices const & indices_set);
   MonomialExpression(MonomialExpression const & other);
 
@@ -33,8 +33,9 @@ class MonomialExpression {
 
   Rational EvaluateIndices(std::map<Index, size_t> const & evaluation_map) const;
 
-  bool operator== (MonomialExpression const & other) const { return *index_mapping == *other.index_mapping; };
-  bool operator< (MonomialExpression const & other) const { return *index_mapping < *other.index_mapping; };
+  bool operator== (MonomialExpression const & other) const;
+  bool operator!= (MonomialExpression const & other) const;
+  bool operator< (MonomialExpression const & other) const;
 
   std::string GetLatexString(bool upper = true) const;
 

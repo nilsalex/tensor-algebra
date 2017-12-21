@@ -297,6 +297,8 @@ bool operator< (IndexMappingEntry const & A, IndexMappingEntry const & B) {
   return *(A.first) < *(B.first);
 }
 
+MonomialExpression::MonomialExpression() : index_mapping(std::make_unique<IndexMapping>()) { }
+
 MonomialExpression::MonomialExpression(Tensor const & tensor_set, Indices const & indices_set) : index_mapping(std::make_unique<IndexMapping>()) { 
   auto mapping_set = std::make_unique<IndexMapping>(tensor_set.GetIndexMapping(indices_set));
   std::swap(index_mapping, mapping_set);
@@ -407,4 +409,8 @@ std::string MonomialExpression::GetLatexString(bool upper) const {
 
   return ss.str();
 }
+
+bool MonomialExpression::operator== (MonomialExpression const & other) const { return *index_mapping == *other.index_mapping; }
+bool MonomialExpression::operator!= (MonomialExpression const & other) const { return !(*this == other); }
+bool MonomialExpression::operator< (MonomialExpression const & other) const { return *index_mapping < *other.index_mapping; }
 
