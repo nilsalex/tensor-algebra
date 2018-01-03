@@ -108,6 +108,10 @@ void Expression::EliminateZeros() {
   std::swap(summands, summands_new);
 }
 
+void Expression::EliminateVariable(size_t const variable) {
+  std::for_each(summands->begin(), summands->end(), [variable](auto & a) { a.second->EliminateVariable(variable); });
+}
+
 void Expression::SortSummands() {
   bool swapped;
   do {

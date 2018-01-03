@@ -29,6 +29,7 @@ class ScalarSum {
   Rational Ratio(ScalarSum const & other) const;
 
   void AddScalar(Scalar const & other);
+  void EliminateVariable(size_t const variable);
   void MergeWithOther(ScalarSum const & other);
   void Sort();
   void Collect();

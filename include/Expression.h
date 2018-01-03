@@ -30,6 +30,7 @@ class Expression {
   void ApplyMonomialSymmetries();
   void CanonicalisePrefactors();
   void CollectPrefactors();
+  void EliminateVariable(size_t const variable);
   void EliminateZeros();
   void RedefineScalars();
   void SortMonomials();

@@ -93,6 +93,12 @@ int main () {
 */
   Expression expr = gtor.Generate();
 
+  expr.EliminateVariable(6);
+  expr.EliminateVariable(8);
+  expr.EliminateVariable(9);
+
+  expr.CanonicalisePrefactors();
+
   std::cout << "Tensor ansatz:" << std::endl;
   std::cout << expr.GetLatexString() << std::endl;
 

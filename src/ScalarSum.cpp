@@ -53,6 +53,16 @@ std::string ScalarSum::ToString(std::string base_name, bool plus_sign) const {
   return ss.str();
 }
 
+void ScalarSum::EliminateVariable(size_t const variable) {
+  std::for_each(scalars->begin(), scalars->end(),
+    [variable](auto & a) {
+      if (a->VariableNumber() == variable) {
+        a->MultiplyCoefficient(Rational(0, 1));
+      }
+    }
+  );
+}
+
 void ScalarSum::Sort() {
   std::sort(scalars->begin(), scalars->end(), 
     [](auto & a, auto & b) {
