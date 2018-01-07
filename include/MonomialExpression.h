@@ -33,6 +33,8 @@ class MonomialExpression {
 
   Rational EvaluateIndices(std::map<Index, size_t> const & evaluation_map) const;
 
+  MonomialExpression MultiplyOther(MonomialExpression const & other) const;
+
   bool operator== (MonomialExpression const & other) const;
   bool operator!= (MonomialExpression const & other) const;
   bool operator< (MonomialExpression const & other) const;

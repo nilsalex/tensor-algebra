@@ -13,6 +13,8 @@
 typedef std::pair<std::unique_ptr<MonomialExpression>, std::unique_ptr<ScalarSum>> Summand;
 typedef std::vector<std::pair<std::unique_ptr<MonomialExpression>, std::unique_ptr<ScalarSum>>> Sum;
 
+bool operator< (Summand const & lop, Summand const & rop);
+
 class Expression {
  private:
   std::unique_ptr<Sum> summands;
@@ -36,6 +38,12 @@ class Expression {
   void SortMonomials();
   void SortSummands();
   void SortSummandsByPrefactors();
+
+  Expression ApplyGaugeSymmetry (Expression const & delta) const;
+
+  Expression NumericSimplify (Indices const & indices, bool print_matrix = false) const;
+
+  Expression MultiplyOther (Expression const & other) const;
 
   void ExchangeSymmetrise(Indices const & indices_1, Indices const & indices_2, bool anti = false);
 

@@ -391,6 +391,19 @@ void MonomialExpression::ExchangeIndices(Indices const & indices1, Indices const
   std::swap(index_mapping, index_mapping_new);
 }
 
+MonomialExpression MonomialExpression::MultiplyOther(MonomialExpression const & other) const {
+  MonomialExpression ret;
+  auto deep_copy =
+    [&ret] (auto const & b) mutable {
+      ret.index_mapping->push_back(std::make_pair(std::make_unique<Indices>(*b.first), std::make_unique<Tensor>(*b.second)));
+    };
+
+  std::for_each(this->index_mapping->cbegin(), this->index_mapping->cend(), deep_copy);
+  std::for_each(other.index_mapping->cbegin(), other.index_mapping->cend(), deep_copy);
+
+  return ret;
+}
+
 std::string MonomialExpression::GetLatexString(bool upper) const {
   if (IsZero()) {
     return "0";

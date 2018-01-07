@@ -113,6 +113,7 @@ void Expression::EliminateVariable(size_t const variable) {
 }
 
 void Expression::SortSummands() {
+/*
   bool swapped;
   do {
     swapped = false;
@@ -123,6 +124,9 @@ void Expression::SortSummands() {
       }
     }
   } while (swapped);
+*/
+
+  std::sort(summands->begin(), summands->end());
 }
 
 void Expression::ExchangeSymmetrise(Indices const & indices1, Indices const & indices2, bool anti) {
@@ -147,7 +151,17 @@ void Expression::ExchangeSymmetrise(Indices const & indices1, Indices const & in
 }
 
 void Expression::SortSummandsByPrefactors() {
-  std::sort(summands->begin(), summands->end(), [](auto & a, auto & b) { return *(a.second) < *(b.second); });
+  std::sort(summands->begin(), summands->end(), [](auto & a, auto & b) {
+    if (*a.second < *b.second) {
+      return true;
+    } else if (*b.second < *a.second) {
+      return false;
+    } else if (*a.first < *b.first) {
+      return true;
+    } else {
+      return false;
+    }
+  });
 }
 
 bool Expression::ContainsMonomial (MonomialExpression const & monexpr) const {
@@ -210,6 +224,10 @@ ScalarSum Expression::EvaluateIndices(Indices const & indices, std::vector<size_
   return ret;
 }
 
+Expression Expression::MultiplyOther(Expression const & other) const {
+  return *this;
+}
+
 bool Expression::IsZero() const { return summands->empty(); }
 
 std::string const Expression::GetLatexString(std::string base_name, bool upper) const {
@@ -232,4 +250,16 @@ std::string const Expression::GetLatexString(std::string base_name, bool upper) 
   }
 
   return ss.str();
+}
+
+bool operator< (Summand const & lop, Summand const & rop) {
+  if (*lop.first < *rop.first) {
+    return true;
+  } else if (*rop.first < *lop.first) {
+    return false;
+  } else if (*lop.second < *rop.second) {
+    return true;
+  } else {
+    return false;
+  }
 }

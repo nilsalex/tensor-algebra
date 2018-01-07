@@ -141,3 +141,33 @@ TEST(Expression, ApplyMonomialSymmetries) {
 
   EXPECT_EQ("1 eta^{ b y } s^{ a k l } v^{ n }\n- 1*e_5 epsilon^{ a b k y } v^{ l } v^{ n }\n+ 1*e_5 v^{ b } eta^{ a y } eta^{ k l } v^{ n }", e.GetLatexString());
 }
+
+TEST(Expression, SortSummands) {
+  Tensor eta (2, "eta");
+  eta.SetSymmetric();
+
+  Tensor partial (1, "partial");
+  Tensor xi      (1, "xi");
+
+  TensorMonomial tm;
+
+  tm.AddFactorRight(eta);
+  tm.AddFactorRight(partial);
+  tm.AddFactorRight(xi);
+
+  Indices indices  {'e', 'g', 'h', 'f'};
+  Indices indices2 {'e', 'g', 'f', 'h'};
+
+  MonomialExpression m (tm, indices);
+
+  Expression expr;
+  expr.AddSummand(m);
+
+  expr.ExchangeSymmetrise (indices, indices2, false);
+
+  EXPECT_EQ("1/2 eta^{ e g } partial^{ h } xi^{ f }\n+ 1/2 eta^{ e g } partial^{ f } xi^{ h }", expr.GetLatexString());
+
+  expr.SortSummands();
+
+  EXPECT_EQ("1/2 eta^{ e g } partial^{ f } xi^{ h }\n+ 1/2 eta^{ e g } partial^{ h } xi^{ f }", expr.GetLatexString());
+}

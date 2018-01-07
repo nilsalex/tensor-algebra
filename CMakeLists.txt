@@ -33,7 +33,7 @@ find_library(GMP_LIBRARY NAMES gmp)
 set(EIGEN_INCLUDE /usr/include/eigen3)
 
 include_directories(${CMAKE_SOURCE_DIR}/include ${EIGEN_INCLUDE})
-add_library(tensor-algebra SHARED src/Indices.cpp src/Rational.cpp src/Tensor.cpp src/TensorMonomial.cpp src/Scalar.cpp src/ScalarSum.cpp src/MonomialExpression.cpp src/Expression.cpp src/Generator.cpp src/MyPermutation.cpp src/NumericSimplify.cpp)
+add_library(tensor-algebra SHARED src/Indices.cpp src/Rational.cpp src/Tensor.cpp src/TensorMonomial.cpp src/Scalar.cpp src/ScalarSum.cpp src/MonomialExpression.cpp src/Expression.cpp src/Generator.cpp src/MyPermutation.cpp src/NumericSimplify.cpp src/ApplyGaugeSymmetry.cpp)
 add_executable(main src/main.cpp)
 target_link_libraries(main tensor-algebra ${GMP_LIBRARY})
 add_executable(test_all src/test/RationalTest.cpp src/test/ScalarTest.cpp src/test/ScalarSumTest.cpp src/test/IndicesTest.cpp src/test/TensorTest.cpp src/test/TensorMonomialTest.cpp src/test/MonomialExpressionTest.cpp src/test/ExpressionTest.cpp)

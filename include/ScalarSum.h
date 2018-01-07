@@ -34,6 +34,8 @@ class ScalarSum {
   void Sort();
   void Collect();
 
+  ScalarSum MultiplyOther (ScalarSum const & other) const;
+
   std::set<size_t> CoefficientSet() const;
   std::vector<Rational> CoefficientVector(std::map<size_t, size_t> const & coefficient_map) const;
 

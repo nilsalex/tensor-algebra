@@ -99,15 +99,19 @@ TEST(MonomialExpression, Sort) {
 
   Indices i1 {'b', 'a', 'e'};
   Indices i2 {'a', 'c', 'b', 'd', 'e', 'f', 'g', 'h', 'o', 'p', 'm', 'n', 'j', 'i', 'q'};
+  Indices i3 {'a', 'c', 'b', 'd', 'e', 'm', 'n', 'j', 'i', 'q', 'f', 'g', 'h', 'o', 'p'};
 
   MonomialExpression m1 (t1, i1);
   MonomialExpression m2 (tm, i2);
+  MonomialExpression m3 (tm, i3);
 
   m1.Sort();
   m2.Sort();
+  m3.Sort();
 
   EXPECT_EQ("A^{ b a e }", m1.GetLatexString());
   EXPECT_EQ("A^{ a c b } T^{ f g h o p } T^{ m n j i q } Y^{ d e }", m2.GetLatexString());
+  EXPECT_EQ("A^{ a c b } T^{ f g h o p } T^{ m n j i q } Y^{ d e }", m3.GetLatexString());
 }
 
 TEST(MonomialExpression, ExchangeIndices) {
@@ -135,6 +139,63 @@ TEST(MonomialExpression, ExchangeIndices) {
 
   EXPECT_EQ("A^{ b e a }", m1.GetLatexString());
   EXPECT_EQ("A^{ a q n } Y^{ d e } T^{ f g h o p } T^{ m c j i b }", m2.GetLatexString());
+}
+
+TEST(MonomialExpression, MultiplyOther) {
+  Tensor A (3, "A");
+  Tensor B (2, "B");
+  Tensor C (5, "C");
+  Tensor D (4, "D");
+
+  TensorMonomial tm1;
+  TensorMonomial tm2;
+  TensorMonomial tm3;
+
+  tm1.AddFactorRight(A);
+
+  tm2.AddFactorRight(B);
+
+  tm3.AddFactorRight(C);
+  tm3.AddFactorRight(D);
+
+  Indices i1 {'a', 'x', 'z'};
+  Indices i2 {'x', 'y'};
+  Indices i3 {'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'};
+
+  MonomialExpression m1 (tm1, i1);
+  MonomialExpression m2 (tm2, i2);
+  MonomialExpression m3 (tm3, i3);
+
+  EXPECT_EQ("A^{ a x z }", m1.GetLatexString());
+  EXPECT_EQ("B^{ x y }", m2.GetLatexString());
+  EXPECT_EQ("C^{ b c d e f } D^{ g h i j }", m3.GetLatexString());
+
+  MonomialExpression m11 = m1.MultiplyOther(m1);
+  MonomialExpression m12 = m1.MultiplyOther(m2);
+  MonomialExpression m13 = m1.MultiplyOther(m3);
+  MonomialExpression m21 = m2.MultiplyOther(m1);
+  MonomialExpression m22 = m2.MultiplyOther(m2);
+  MonomialExpression m23 = m2.MultiplyOther(m3);
+  MonomialExpression m31 = m3.MultiplyOther(m1);
+  MonomialExpression m32 = m3.MultiplyOther(m2);
+  MonomialExpression m33 = m3.MultiplyOther(m3);
+
+  EXPECT_EQ("A^{ a x z }", m1.GetLatexString());
+  EXPECT_EQ("B^{ x y }", m2.GetLatexString());
+  EXPECT_EQ("C^{ b c d e f } D^{ g h i j }", m3.GetLatexString());
+
+  EXPECT_EQ("A^{ a x z } A^{ a x z }", m11.GetLatexString());
+  EXPECT_EQ("A^{ a x z } B^{ x y }", m12.GetLatexString());
+  EXPECT_EQ("A^{ a x z } C^{ b c d e f } D^{ g h i j }", m13.GetLatexString());
+
+  EXPECT_EQ("B^{ x y } A^{ a x z }", m21.GetLatexString());
+  EXPECT_EQ("B^{ x y } B^{ x y }", m22.GetLatexString());
+  EXPECT_EQ("B^{ x y } C^{ b c d e f } D^{ g h i j }", m23.GetLatexString());
+
+  EXPECT_EQ("C^{ b c d e f } D^{ g h i j } A^{ a x z }", m31.GetLatexString());
+  EXPECT_EQ("C^{ b c d e f } D^{ g h i j } B^{ x y }", m32.GetLatexString());
+  EXPECT_EQ("C^{ b c d e f } D^{ g h i j } C^{ b c d e f } D^{ g h i j }", m33.GetLatexString());
+
 }
 
 TEST(MonomialExpression, EvaluateIndices) {
