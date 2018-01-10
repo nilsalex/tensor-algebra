@@ -31,6 +31,10 @@ class Indices {
   Indices Permutation(std::vector<size_t> const & permutation) const;
   Indices SubIndices(size_t start, size_t len) const;
 
+  void Replace(Index const i_old, Index const i_new);
+
+  Indices Overlap(Indices const & other) const;
+
   bool operator== (Indices const & other) const;
   bool operator!= (Indices const & other) const;
   bool operator< (Indices const & other) const;

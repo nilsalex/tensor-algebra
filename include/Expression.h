@@ -28,11 +28,16 @@ class Expression {
   void AddSummand (MonomialExpression const & monomial_expression, size_t variable);
   void AddSummand (MonomialExpression const & monomial_expression, Rational const & rational, size_t variable);
   void AddSummand (MonomialExpression const & monomial_expression, Scalar const & scalar);
+  void AddSummand (MonomialExpression const & monomial_expression, ScalarSum const & scalar_sum);
 
   void ApplyMonomialSymmetries();
   void CanonicalisePrefactors();
   void CollectPrefactors();
   void EliminateVariable(size_t const variable);
+  void SubstituteVariable(size_t const variable_old, ScalarSum const & scalar_sum_new);
+  void EliminateDelta();
+  void EliminateEpsilon();
+  void EliminateEtaEta();
   void EliminateZeros();
   void RedefineScalars();
   void SortMonomials();
@@ -42,7 +47,6 @@ class Expression {
   Expression ApplyGaugeSymmetry (Expression const & delta) const;
 
   Expression NumericSimplify (Indices const & indices, bool print_matrix = false) const;
-
   Expression MultiplyOther (Expression const & other) const;
 
   void ExchangeSymmetrise(Indices const & indices_1, Indices const & indices_2, bool anti = false);

@@ -18,6 +18,10 @@ Expression::Expression(Expression const & other) : summands(std::make_unique<Sum
   });
 }
 
+void Expression::AddSummand (MonomialExpression const & monomial_expression, ScalarSum const & scalar_sum) {
+  summands->push_back(std::make_pair(std::make_unique<MonomialExpression>(monomial_expression), std::make_unique<ScalarSum>(scalar_sum)));
+}
+
 void Expression::AddSummand (MonomialExpression const & monomial_expression, Scalar const & scalar) {
   summands->push_back(std::make_pair(std::make_unique<MonomialExpression>(monomial_expression), std::make_unique<ScalarSum>(scalar)));
 }
@@ -86,12 +90,59 @@ void Expression::CollectPrefactors() {
 }
 
 void Expression::CanonicalisePrefactors() {
-  for (auto & summand : *summands) {
-    summand.second->Sort();
-    summand.second->Collect();
-  }
+  std::for_each(summands->begin(), summands->end(), [](auto & a) { a.second->Sort(); a.second->Collect(); });
 
   EliminateZeros();
+}
+
+void Expression::EliminateDelta() {
+  bool repeat = true;
+
+  while (repeat) {
+    repeat = false;
+    std::for_each(summands->begin(), summands->end(),
+      [&repeat](auto & a) {
+        EliminateReturn ret = a.first->EliminateDelta();
+        if (ret == DELTA_OK || ret == DELTA_TO_TRACE) {
+          repeat = true;
+        }
+      });
+  }
+}
+
+void Expression::EliminateEpsilon() {
+  bool repeat = true;
+
+  while (repeat) {
+    repeat = false;
+    std::for_each(summands->begin(), summands->end(),
+      [&repeat](auto & a) {
+        EliminateReturn ret = a.first->EliminateEpsilon();
+        if (ret == EPSILON_TO_ZERO) {
+          a.second->MultiplyCoefficient(Rational(0, 1));
+          repeat = true;
+        }
+      });
+    EliminateZeros();
+  }
+}
+
+void Expression::EliminateEtaEta() {
+  bool repeat = true;
+
+  while (repeat) {
+    repeat = false;
+    std::for_each(summands->begin(), summands->end(),
+      [&repeat](auto & a) {
+        EliminateReturn ret = a.first->EliminateEtaEta();
+        if (ret == ETA_ETA_TO_TRACE) {
+          a.second->MultiplyCoefficient(Rational(4, 1));
+          repeat = true;
+        } else if (ret == ETA_ETA_TO_DELTA) {
+          repeat = true;
+        }
+      });
+  }
 }
 
 void Expression::EliminateZeros() {
@@ -108,24 +159,18 @@ void Expression::EliminateZeros() {
   std::swap(summands, summands_new);
 }
 
+void Expression::SubstituteVariable(size_t const variable_old, ScalarSum const & scalar_sum_new) {
+  std::for_each(summands->begin(), summands->end(),
+    [variable_old,scalar_sum_new](auto & a) {
+      a.second->SubstituteVariable(variable_old, scalar_sum_new);
+    });
+}
+
 void Expression::EliminateVariable(size_t const variable) {
   std::for_each(summands->begin(), summands->end(), [variable](auto & a) { a.second->EliminateVariable(variable); });
 }
 
 void Expression::SortSummands() {
-/*
-  bool swapped;
-  do {
-    swapped = false;
-    for (auto it = summands->begin(); std::distance(it, summands->end()) > 1; ++it) {
-      if (*(it->first) < *(std::next(it)->first)) {
-        std::swap(*it, *std::next(it));
-        swapped = true;
-      }
-    }
-  } while (swapped);
-*/
-
   std::sort(summands->begin(), summands->end());
 }
 
@@ -225,7 +270,21 @@ ScalarSum Expression::EvaluateIndices(Indices const & indices, std::vector<size_
 }
 
 Expression Expression::MultiplyOther(Expression const & other) const {
-  return *this;
+  if (IsZero() || other.IsZero()) {
+    return Expression();
+  }
+
+  Expression ret;
+
+  std::for_each(summands->cbegin(), summands->cend(),
+    [&ret, &other] (auto const & a) {
+      std::for_each(other.summands->cbegin(), other.summands->cend(),
+        [&ret, &a] (auto const & b) {
+          ret.AddSummand(a.first->MultiplyOther(*(b.first)), a.second->MultiplyOther(*(b.second)));
+        });
+      });
+
+  return ret;
 }
 
 bool Expression::IsZero() const { return summands->empty(); }

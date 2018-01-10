@@ -9,6 +9,8 @@
 #include "Rational.h"
 #include "Tensor.h"
 
+enum EliminateReturn {ERROR, NO_ACTION, ETA_ETA_TO_DELTA, ETA_ETA_TO_TRACE, DELTA_OK, DELTA_TO_TRACE, EPSILON_TO_ZERO};
+
 typedef std::pair<std::unique_ptr<Indices>, std::unique_ptr<Tensor>> IndexMappingEntry;
 typedef std::vector<std::pair<std::unique_ptr<Indices>, std::unique_ptr<Tensor>>> IndexMapping;
 
@@ -29,7 +31,12 @@ class MonomialExpression {
   bool ApplySymmetries();
   void Sort();
 
+  void AddFactorRight(MonomialExpression const & other);
+
   void ExchangeIndices(Indices const & indices1, Indices const & indices2);
+  EliminateReturn EliminateEtaEta();
+  EliminateReturn EliminateEpsilon();
+  EliminateReturn EliminateDelta();
 
   Rational EvaluateIndices(std::map<Index, size_t> const & evaluation_map) const;
 

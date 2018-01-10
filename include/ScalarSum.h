@@ -30,6 +30,7 @@ class ScalarSum {
 
   void AddScalar(Scalar const & other);
   void EliminateVariable(size_t const variable);
+  void SubstituteVariable(size_t const variable, ScalarSum const & scalar_sum_new);
   void MergeWithOther(ScalarSum const & other);
   void Sort();
   void Collect();
@@ -38,6 +39,8 @@ class ScalarSum {
 
   std::set<size_t> CoefficientSet() const;
   std::vector<Rational> CoefficientVector(std::map<size_t, size_t> const & coefficient_map) const;
+
+  ScalarSum & operator=(ScalarSum const & other);
 
   bool operator== (ScalarSum const & other) const;
   bool operator!= (ScalarSum const & other) const;

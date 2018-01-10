@@ -196,6 +196,33 @@ TEST(ScalarSum, Collect) {
 
 }
 
+TEST(ScalarSum, MultiplyOther) {
+  ScalarSum ss1;
+  ScalarSum ss2;
+  ScalarSum ss3;
+
+  ss1.AddScalar(Scalar(Rational(5, 3)));
+  ss1.AddScalar(Scalar(Rational(5, 2), 3));
+
+  ss2.AddScalar(Scalar(12));
+  ss2.AddScalar(Scalar(Rational(7, 10), 2));
+
+  EXPECT_EQ("(5/3 + 5/2*e_3)", ss1.ToString());
+  EXPECT_EQ("(1*e_12 + 7/10*e_2)", ss2.ToString());
+  EXPECT_EQ("0", ss3.ToString());
+
+  ScalarSum ss4 = ss1.MultiplyOther(ss2);
+  ScalarSum ss5 = ss1.MultiplyOther(ss3);
+  ScalarSum ss6 = ss3.MultiplyOther(ss2);
+  ScalarSum ss7 = ss3.MultiplyOther(ss3);
+
+  EXPECT_EQ("(7/6*e_2 + 7/4*e_2*e_3 + 5/2*e_3*e_12 + 5/3*e_12)", ss4.ToString());
+  EXPECT_EQ("0", ss5.ToString());
+  EXPECT_EQ("0", ss6.ToString());
+  EXPECT_EQ("0", ss7.ToString());
+
+}
+
 TEST(ScalarSum, CoefficientSet) {
   ScalarSum ss1;
   ScalarSum ss2;

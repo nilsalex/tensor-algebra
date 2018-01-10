@@ -1,5 +1,7 @@
 #include "MonomialExpression.h"
 
+#include <iostream>
+
 #include <algorithm>
 #include <cassert>
 #include <sstream>
@@ -389,6 +391,207 @@ void MonomialExpression::ExchangeIndices(Indices const & indices1, Indices const
   }
 
   std::swap(index_mapping, index_mapping_new);
+}
+
+void MonomialExpression::AddFactorRight(MonomialExpression const & other) {
+  auto deep_copy =
+    [this] (auto const & b) mutable {
+      this->index_mapping->push_back(std::make_pair(std::make_unique<Indices>(*b.first), std::make_unique<Tensor>(*b.second)));
+    };
+
+  std::for_each(other.index_mapping->cbegin(), other.index_mapping->cend(), deep_copy);
+}
+
+EliminateReturn MonomialExpression::EliminateEpsilon() {
+  Tensor * epsilon = nullptr;
+  Indices epsilon_indices;
+
+  for (auto const & a : *index_mapping) {
+    if (a.second->get_name() == "epsilon" && a.second->get_rank() == 4) {
+      epsilon = a.second.get();
+      epsilon_indices = *a.first;
+      break;
+    }
+  }
+
+  if (epsilon == nullptr) {
+    return NO_ACTION;
+  } else {
+    epsilon_indices.SortAndMakeUnique();
+    if (epsilon_indices.size() < 4) {
+      return EPSILON_TO_ZERO;
+    }
+
+    for (auto const & a : *index_mapping) {
+      if (epsilon == a.second.get()) {
+        continue;
+      }
+      if (a.second->IsSymmetric()) {
+        Indices overlap = epsilon_indices.Overlap(*a.first);
+        if (overlap.size() > 1) {
+          return EPSILON_TO_ZERO;
+        }
+      }
+    }
+
+    return NO_ACTION;
+  }
+  
+}
+
+EliminateReturn MonomialExpression::EliminateEtaEta() {
+  std::pair<Tensor *, Tensor *> to_eliminate = std::make_pair(nullptr, nullptr);
+  Indices overlap;
+
+  bool break_now = false;
+
+  for (auto it1 = index_mapping->cbegin(); it1 < index_mapping->cend(); ++it1) {
+    for (auto it2 = it1 + 1; it2 < index_mapping->cend(); ++it2) {
+      if (it1->second->get_name() == "eta" && it2->second->get_name() == "eta") {
+        Indices _overlap = it1->first->Overlap(*(it2->first));
+
+        if (_overlap.size() > 0) {
+          to_eliminate = std::make_pair(it1->second.get(), it2->second.get());
+          overlap = _overlap;
+          break_now = true;
+          break;
+        }
+      }
+    }
+    if (break_now) {
+      break;
+    }
+  }
+
+  if (overlap.size() == 0) {
+    return NO_ACTION;
+  } else if (overlap.size() > 2) {
+    assert(false);
+    return ERROR;
+  }
+
+  if (overlap.size() == 1) {
+    Tensor delta(2, "delta");
+    delta.SetSymmetric();
+
+    std::vector<Index> indices_delta;
+
+    index_mapping->erase(
+      std::remove_if(index_mapping->begin(), index_mapping->end(),
+        [&indices_delta,&overlap,&to_eliminate] (auto const & a) {
+          if (a.second.get() == to_eliminate.first || a.second.get() == to_eliminate.second) {
+            if (a.first->at(0) != overlap.at(0)) {
+              indices_delta.push_back(a.first->at(0));
+            } else if (a.first->at(1) != overlap.at(0)) {
+              indices_delta.push_back(a.first->at(1));
+            } else {
+              assert(false);
+            }
+            return true;
+          } else {
+            return false;
+          }
+        }),
+      index_mapping->end());
+
+    assert (indices_delta.size() == 2);
+
+    this->AddFactorRight(MonomialExpression(delta, Indices({indices_delta.at(0), indices_delta.at(1)})));
+
+    return ETA_ETA_TO_DELTA;
+  }
+
+
+
+  if (overlap.size() == 2) {
+    index_mapping->erase(
+      std::remove_if(index_mapping->begin(), index_mapping->end(),
+        [&to_eliminate] (auto const & a) {
+          return (a.second.get() == to_eliminate.first || a.second.get() == to_eliminate.second);
+        }),
+      index_mapping->end());
+
+    return ETA_ETA_TO_TRACE;
+  } 
+
+  return ERROR;
+}
+
+EliminateReturn MonomialExpression::EliminateDelta() {
+  Tensor * delta = nullptr;
+  Indices delta_indices;
+
+  for (auto const & a : *index_mapping) {
+    if (a.second->get_name() == "delta" && a.second->get_rank() == 2) {
+      delta = a.second.get();
+      delta_indices = *a.first;
+      break;
+    }
+  }
+
+  if (delta == nullptr) {
+    return NO_ACTION;
+  } else if (delta_indices.at(0) == delta_indices.at(1)) {
+    index_mapping->erase(
+      std::remove_if(index_mapping->begin(), index_mapping->end(),
+        [&delta] (auto const & a) {
+          return delta == a.second.get();
+        }),
+      index_mapping->end());
+
+    return DELTA_TO_TRACE;
+  } else {
+    auto it = std::find_if(index_mapping->cbegin(), index_mapping->cend(),
+                             [&delta,&delta_indices] (auto const & a) {
+                               Indices overlap = delta_indices.Overlap(*a.first);
+                               return (delta != a.second.get() && overlap.size() > 0);
+                             });
+
+    if (it == index_mapping->end()) {
+      return NO_ACTION;
+    }
+
+    Indices overlap = delta_indices.Overlap(*(it->first));
+
+    if (overlap.size() == 2) {
+      it->first->Replace(overlap.at(1), overlap.at(0));
+
+      index_mapping->erase(
+        std::remove_if(index_mapping->begin(), index_mapping->end(),
+          [&delta] (auto const & a) {
+            return delta == a.second.get();
+          }),
+        index_mapping->end());
+
+      return DELTA_OK;
+    } else if (overlap.size() == 1) {
+      Index to_replace_with;
+      
+      if (delta_indices.at(0) != overlap.at(0)) {
+        to_replace_with = delta_indices.at(0);
+      } else if (delta_indices.at(1) != overlap.at(0)) {
+        to_replace_with = delta_indices.at(1);
+      } else {
+        assert(false);
+        return ERROR;
+      }
+
+      it->first->Replace(overlap.at(0), to_replace_with);
+
+      index_mapping->erase(
+        std::remove_if(index_mapping->begin(), index_mapping->end(),
+          [&delta] (auto const & a) {
+            return delta == a.second.get();
+          }),
+        index_mapping->end());
+
+      return DELTA_OK;
+    } else {
+      assert(false);
+      return ERROR;
+    }
+  }
+
 }
 
 MonomialExpression MonomialExpression::MultiplyOther(MonomialExpression const & other) const {

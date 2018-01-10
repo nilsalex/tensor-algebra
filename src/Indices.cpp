@@ -79,6 +79,25 @@ Indices Indices::SubIndices(size_t start, size_t len) const {
   return indices_ret;
 }
 
+Indices Indices::Overlap(Indices const & other) const {
+  Indices ret;
+
+  std::for_each(this->indices.cbegin(), this->indices.cend(),
+    [&ret, &other] (auto const & a) mutable {
+      if (std::find(other.indices.cbegin(), other.indices.cend(), a) != other.indices.end()) {
+        ret.indices.push_back(a);
+      }
+    });
+
+  ret.SortAndMakeUnique();
+
+  return ret;
+}
+
+void Indices::Replace(Index const i_old, Index const i_new) {
+  std::replace(indices.begin(), indices.end(), i_old, i_new);
+}
+
 bool Indices::operator== (Indices const & other) const { return indices == other.indices; }
 bool Indices::operator!= (Indices const & other) const { return !(*this == other); }
 bool Indices::operator< (Indices const & other) const { return indices < other.indices; }

@@ -63,6 +63,30 @@ void ScalarSum::EliminateVariable(size_t const variable) {
   );
 }
 
+void ScalarSum::SubstituteVariable(size_t const variable, ScalarSum const & scalar_sum_new) {
+  auto scalars_new = std::make_unique<std::vector<std::unique_ptr<Scalar>>>();
+  std::for_each(scalars->cbegin(), scalars->cend(),
+    [variable,&scalars_new,&scalar_sum_new] (auto & a) {
+      if (!a->ContainsVariable(variable)) {
+        scalars_new->push_back(std::make_unique<Scalar>(*a));
+      } else {
+        size_t count = a->RemoveVariable(variable);
+        ScalarSum sum_tmp (*a);
+        for (size_t counter = 0; counter < count; ++counter) {
+          sum_tmp = sum_tmp.MultiplyOther(scalar_sum_new);
+        }
+        sum_tmp.Sort();
+        sum_tmp.Collect();
+        std::for_each(sum_tmp.scalars->begin(), sum_tmp.scalars->end(),
+          [&scalars_new] (auto const & b) {
+            scalars_new->push_back(std::make_unique<Scalar>(*b));
+          });
+      }
+    });
+
+  std::swap(scalars, scalars_new);
+}
+
 void ScalarSum::Sort() {
   std::sort(scalars->begin(), scalars->end(), 
     [](auto & a, auto & b) {
@@ -159,6 +183,34 @@ std::vector<Rational> ScalarSum::CoefficientVector(std::map<size_t, size_t> cons
     });
 
   return ret;
+}
+
+ScalarSum ScalarSum::MultiplyOther(ScalarSum const & other) const {
+  if (scalars->empty() || other.scalars->empty()) {
+    return ScalarSum();
+  }
+
+  ScalarSum ret;
+
+  std::for_each(scalars->cbegin(), scalars->cend(),
+    [&ret, &other] (auto const & a) {
+      std::for_each(other.scalars->cbegin(), other.scalars->cend(),
+        [&ret, &a] (auto const & b) {
+          ret.AddScalar(a->MultiplyOther(*b));
+        });
+      });
+
+  ret.Sort();
+  ret.Collect();
+
+  return ret;
+}
+
+ScalarSum & ScalarSum::operator=(ScalarSum const & other) {
+  ScalarSum tmp(other);
+  std::swap(tmp.scalars, this->scalars);
+
+  return *this;
 }
 
 bool ScalarSum::operator==(ScalarSum const & other) const {

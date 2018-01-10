@@ -15,6 +15,19 @@ size_t Scalar::Order() const { return (IsZero() ? 0 : variables.size()); }
 
 size_t Scalar::VariableNumber() const { assert(variables.size() == 1); return *(variables.begin()); }
 
+bool Scalar::ContainsVariable(size_t const variable) const { return (std::find(variables.begin(), variables.end(), variable) != variables.end()); }
+
+size_t Scalar::RemoveVariable(size_t const variable) {
+  size_t old_size = variables.size();
+  auto it = std::find(variables.begin(), variables.end(), variable);
+  while (it != variables.end()) {
+    variables.erase(it);
+    it = std::find(variables.begin(), variables.end(), variable);
+  }
+
+  return old_size - variables.size();
+}
+
 void Scalar::AddOther(Scalar const & other) { assert(CompareVariables(other)); coefficient = coefficient.AddOther(other.coefficient); }
 bool Scalar::CompareVariables(Scalar const & other) const { return variables == other.variables; }
 bool Scalar::IsZero() const { return coefficient.IsZero(); }
@@ -25,11 +38,18 @@ void Scalar::DivideCoefficient(Rational const & coeff) { coefficient = coefficie
 void Scalar::DivideByTwo() { coefficient.DivideByTwo(); }
 void Scalar::Negate() { coefficient.Negate(); }
 
+Scalar Scalar::MultiplyOther(Scalar const & other) const {
+  Scalar ret (*this);
+  ret.MultiplyCoefficient(other.coefficient);
+  std::for_each(other.variables.begin(), other.variables.end(), [&ret] (auto const & a) { ret.variables.insert(a); });
+  return ret;
+}
+
 std::string Scalar::ToString(std::string base_name, bool plus_sign) const {
   std::stringstream ss;
   ss << coefficient.ToString(plus_sign);
 
-  if (variables.empty()) {
+  if (variables.empty() || IsZero()) {
     return ss.str();
   }
 

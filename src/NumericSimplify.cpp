@@ -95,7 +95,7 @@ Expression Expression::NumericSimplify(Indices const & indices, bool print_matri
   std::set<size_t> coeff_removed; 
 
   for (size_t column_counter = 0; column_counter < kq.cols(); ++column_counter) {
-    for (size_t row_counter = 0; row_counter < kq.rows(); ++row_counter) {
+    for (size_t row_counter = kq.rows() - 1; row_counter >= 0; --row_counter) {
       if (kq(row_counter, column_counter) == 0 ) {
         continue;
       } else if (std::find(coeff_removed.begin(), coeff_removed.end(), row_counter) != coeff_removed.end()) {

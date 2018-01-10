@@ -151,6 +151,53 @@ TEST(Indices, Permutation) {
   EXPECT_EQ(indices4_perm, (Indices {Index::z, Index::z}));
 }
 
+TEST(Indices, Overlap) {
+  const Indices indices1 { };
+  const Indices indices2 { Index::a, Index::y, Index::g };
+  const Indices indices3 { Index::a, Index::y, Index::z, Index::g };
+  const Indices indices4 { Index::z, Index::z };
+  
+  const Indices indices5 = indices1.Overlap(indices1);
+  const Indices indices6 = indices1.Overlap(indices2);
+  const Indices indices7 = indices1.Overlap(indices3);
+  const Indices indices8 = indices1.Overlap(indices4);
+
+  const Indices indices9 = indices2.Overlap(indices1);
+  const Indices indices10 = indices2.Overlap(indices2);
+  const Indices indices11 = indices2.Overlap(indices3);
+  const Indices indices12 = indices2.Overlap(indices4);
+
+  const Indices indices13 = indices3.Overlap(indices1);
+  const Indices indices14 = indices3.Overlap(indices2);
+  const Indices indices15 = indices3.Overlap(indices3);
+  const Indices indices16 = indices3.Overlap(indices4);
+
+  const Indices indices17 = indices4.Overlap(indices1);
+  const Indices indices18 = indices4.Overlap(indices2);
+  const Indices indices19 = indices4.Overlap(indices3);
+  const Indices indices20 = indices4.Overlap(indices4);
+
+  EXPECT_EQ(indices5, Indices( { } ));
+  EXPECT_EQ(indices6, Indices( { } ));
+  EXPECT_EQ(indices7, Indices( { } ));
+  EXPECT_EQ(indices8, Indices( { } ));
+
+  EXPECT_EQ(indices9,  Indices( { } ));
+  EXPECT_EQ(indices10, Indices( { Index::a, Index::g, Index::y } ));
+  EXPECT_EQ(indices11, Indices( { Index::a, Index::g, Index::y } ));
+  EXPECT_EQ(indices12, Indices( { } ));
+
+  EXPECT_EQ(indices13, Indices( { } ));
+  EXPECT_EQ(indices14, Indices( { Index::a, Index::g, Index::y } ));
+  EXPECT_EQ(indices15, Indices( { Index::a, Index::g, Index::y, Index::z } ));
+  EXPECT_EQ(indices16, Indices( { Index::z } ));
+
+  EXPECT_EQ(indices17, Indices( { } ));
+  EXPECT_EQ(indices18, Indices( { } ));
+  EXPECT_EQ(indices19, Indices( { Index::z } ));
+  EXPECT_EQ(indices20, Indices( { Index::z } ));
+}
+
 TEST(Indices, SubIndices) {
   const Indices indices { Index::a, Index::y, Index::g, Index::f };
 

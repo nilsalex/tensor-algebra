@@ -126,6 +126,11 @@ int main () {
   std::cout << simplified.GetLatexString() << std::endl;
 
   Expression gauge_term = simplified.ApplyGaugeSymmetry(delta);
+  gauge_term.ApplyMonomialSymmetries();
+  gauge_term.SortMonomials();
+  gauge_term.SortSummands();
+  gauge_term.CollectPrefactors();
+  gauge_term.CanonicalisePrefactors();
 
   std::cout << "Gauge term:" << std::endl;
   std::cout << gauge_term.GetLatexString() << std::endl;

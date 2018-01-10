@@ -304,6 +304,26 @@ TEST(Scalar, Negate) {
   EXPECT_EQ(Rational(0, 1), s6.get_coefficient());
 }
 
+TEST(Scalar, MultiplyOther) {
+  Scalar s1(Rational(5, 3));
+  Scalar s2(Rational(-5, 2), 2);
+  Scalar s3(Rational(0, 3));
+
+  EXPECT_EQ("5/3", s1.ToString());
+  EXPECT_EQ("- 5/2*e_2", s2.ToString());
+  EXPECT_EQ("0", s3.ToString());
+
+  Scalar s4 = s1.MultiplyOther(s2).MultiplyOther(s2);
+  Scalar s5 = s3.MultiplyOther(s2);
+
+  EXPECT_EQ("5/3", s1.ToString());
+  EXPECT_EQ("- 5/2*e_2", s2.ToString());
+  EXPECT_EQ("0", s3.ToString());
+  EXPECT_EQ("125/12*e_2*e_2", s4.ToString());
+  EXPECT_EQ("0", s5.ToString());
+
+}
+
 TEST(Scalar, equals) {
   Scalar s1;
   Scalar s2(7);

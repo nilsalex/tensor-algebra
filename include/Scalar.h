@@ -26,12 +26,17 @@ class Scalar {
 
   size_t VariableNumber() const;
 
+  bool ContainsVariable(size_t const variable) const;
+  size_t RemoveVariable(size_t const variable);
+
   void AddOther(Scalar const & other);
   bool CompareVariables(Scalar const & other) const;
   bool IsZero() const;
 
   void MultiplyCoefficient(Rational const & coeff);
   void DivideCoefficient(Rational const & coeff);
+
+  Scalar MultiplyOther(Scalar const & other) const;
 
   std::string ToString(std::string base_name = "e_", bool plus_sign = false) const;
 
