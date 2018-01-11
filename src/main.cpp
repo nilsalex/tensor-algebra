@@ -57,7 +57,6 @@ int main () {
 
   Tensor eta (2, "eta");
   eta.SetSymmetric();
-  
   Tensor partial (1, "partial");
   Tensor xi      (1, "xi");
 

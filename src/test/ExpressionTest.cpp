@@ -171,3 +171,41 @@ TEST(Expression, SortSummands) {
 
   EXPECT_EQ("1/2 eta^{ e g } partial^{ f } xi^{ h }\n+ 1/2 eta^{ e g } partial^{ h } xi^{ f }", expr.GetLatexString());
 }
+
+TEST(Expression, EliminateEpsilon) {
+  Tensor epsilon (4, "epsilon");
+  epsilon.SetAntisymmetric();
+
+  Tensor eta (2, "eta");
+  eta.SetSymmetric();
+
+  Tensor partial (3, "partial");
+  partial.SetSymmetric();
+
+  Tensor xi (1, "xi");
+
+  TensorMonomial tm;
+
+  tm.AddFactorRight(epsilon);
+  tm.AddFactorRight(eta);
+  tm.AddFactorRight(eta);
+  tm.AddFactorRight(partial);
+  tm.AddFactorRight(xi);
+
+  Indices indices { 'c', 'd', 'f', 'p', 'a', 'q', 'b', 'h', 'f', 'p', 'q', 'h' };
+
+  MonomialExpression me (tm, indices);
+
+  ScalarSum s;
+  s.AddScalar(Scalar(2));
+  s.AddScalar(Scalar(4));
+
+  Expression expr;
+  expr.AddSummand(me, s);
+
+  EXPECT_EQ("(1*e_2 + 1*e_4) epsilon^{ c d f p } eta^{ a q } eta^{ b h } partial^{ f p q } xi^{ h }", expr.GetLatexString());
+
+  expr.EliminateEpsilon();
+
+  EXPECT_EQ("0", expr.GetLatexString());
+}

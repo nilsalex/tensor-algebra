@@ -13,7 +13,7 @@
 
 typedef Eigen::Matrix<mpq_class, Eigen::Dynamic, Eigen::Dynamic> MatrixXq;
 
-std::ostream& operator<<(std::ostream & stream, mpq_class const & rop) {
+static std::ostream& operator<<(std::ostream & stream, mpq_class const & rop) {
   stream << rop.get_str();
   return stream;
 }
