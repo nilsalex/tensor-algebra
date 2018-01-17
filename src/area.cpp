@@ -57,7 +57,7 @@ int main () {
       std::cout << expr.GetLatexString() << std::endl;
     
       std::cout << "Generating all linear equations by evaluating indices (this may take some time!) ..." << std::endl;
-      Expression simplified = expr.NumericSimplify(indices, true);
+      simplified = expr.NumericSimplify(indices, true);
   
       simplified.SaveToFile("simplified_area_kinetic.prs");
     }
@@ -127,7 +127,7 @@ int main () {
       std::cout << expr.GetLatexString() << std::endl;
     
       std::cout << "Generating all linear equations by evaluating indices (this may take some time!) ..." << std::endl;
-      Expression simplified = expr.NumericSimplify(indices, true);
+      simplified = expr.NumericSimplify(indices, true);
   
       simplified.SaveToFile("simplified_area_mass.prs");
     }
