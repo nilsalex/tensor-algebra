@@ -58,6 +58,11 @@ Expression Expression::ApplyGaugeSymmetry(Expression const & delta) const {
   gauge_term.CanonicalisePrefactors();
   gauge_term.EliminateZeros();
 
+  std::cout << "The gauge term reads:" << std::endl;
+  std::cout << gauge_term.GetLatexString() << std::endl;
+
+  std::cout << "It has to vanish identically for each possible xi." << std::endl;
+
   std::set<ScalarSum> sum_set;
   std::set<size_t> coefficient_set;
 
@@ -87,8 +92,6 @@ Expression Expression::ApplyGaugeSymmetry(Expression const & delta) const {
     }
   }
 
-  std::cout << mq << std::endl;
-
   Eigen::FullPivLU<MatrixXq> lu_decompq(mq);
 
   std::cout << "the rank of the matrix is : " << lu_decompq.rank() << std::endl;
@@ -98,48 +101,39 @@ Expression Expression::ApplyGaugeSymmetry(Expression const & delta) const {
 
   std::cout << kq << std::endl;
 
-  if (kq.cols() == 0) {
-    return gauge_term;
-  }
-
   std::map<size_t, size_t> coefficient_rmap;
   std::for_each(coefficient_map.begin(), coefficient_map.end(), [&coefficient_rmap](auto a) { coefficient_rmap.insert(std::make_pair(a.second, a.first)); });
 
   std::map<size_t, ScalarSum> replace_map;
 
-  for (int row_counter = 0; row_counter < kq.rows(); ++row_counter) {
-    bool is_zero = true;
-    for (int column_counter = 0; column_counter < kq.cols(); ++column_counter) {
-      if (kq(row_counter, column_counter) != 0) {
-        is_zero = false;
-      }
-    }
-    if (is_zero) {
-      replace_map[coefficient_rmap[row_counter]] = ScalarSum();
-    }
-  }
+  std::vector<std::vector<mpq_class>> kq_vec (kq.rows());
+  std::generate(kq_vec.begin(), kq_vec.end(),
+    [n=0,&kq] () mutable {
+      std::vector<mpq_class> vec_ret (kq.cols());
+      std::generate(vec_ret.begin(), vec_ret.end(),
+      [m=0,&kq,_n=n++] () mutable {
+        return kq(_n,m++);
+      });
+      return vec_ret;
+    });
 
-  for (int column_counter = 0; column_counter < kq.cols(); ++column_counter) {
-    size_t index = 0;
-    ScalarSum rep;
-    mpq_class pivot = 0;
-    for (int row_counter = kq.rows() - 1; row_counter > -1; --row_counter) {
-      if (pivot == 0) {
-        if (kq(row_counter, column_counter) == 0) {
-          continue;
-        } else {
-          pivot = kq(row_counter, column_counter);
-          index = row_counter;
-        }
-      } else {
-        rep.AddScalar(Scalar(Rational(-kq(row_counter, column_counter) / pivot), coefficient_rmap[row_counter]));
-      }
-    }
-    rep.Sort();
-    replace_map[coefficient_rmap[index]] = rep;
-  }
+  std::for_each(kq_vec.cbegin(), kq_vec.cend(),
+    [&replace_map,coefficient_rmap,n=0] (auto const & a) mutable {
+      ScalarSum scalar_sum;
+      std::for_each(a.cbegin(), a.cend(),
+        [&scalar_sum, m=0] (auto const & b) mutable {
+          scalar_sum.AddScalar(Scalar(Rational(b), ++m));
+        });
+      replace_map[coefficient_rmap[n++]] = scalar_sum;
+    });
 
-  std::for_each(replace_map.begin(), replace_map.end(), [](auto const & a) { std::cout << "e_" << a.first << " --> " << a.second.ToString() << std::endl; });
+  std::cout << "Thus the " << coefficient_map.size() << " original constants can be parameterized as:" << std::endl;
+  std::for_each(replace_map.begin(), replace_map.end(),
+    [](auto const & a) {
+      std::cout << "e_" << a.first << " --> " << a.second.ToString() << std::endl;
+    });
+
+  std::cout << "With " << kq.cols() << " remaining constant" << (kq.cols() == 1 ? "" : "(s)") << "." << std::endl;
 
   Expression expression_copy = *this;
 
