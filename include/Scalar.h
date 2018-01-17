@@ -5,12 +5,19 @@
 #include <set>
 #include <string>
 
+#include <boost/serialization/set.hpp>
+
 #include "Rational.h"
 
 class Scalar {
  private:
   std::multiset<size_t> variables;
   Rational coefficient;
+
+  friend class boost::serialization::access;
+
+  template <typename Archive>
+  void serialize(Archive & ar, unsigned int const version);
 
  public:
   Scalar();

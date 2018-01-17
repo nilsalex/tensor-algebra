@@ -1,6 +1,27 @@
 #include <algorithm>
 
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+
 #include "Indices.h"
+
+template <typename Archive>
+void Indices::serialize(Archive & ar, unsigned int const version) {
+  if (version > 0) {
+  } else {
+  }
+  ar & indices;
+}
+
+template void Indices::serialize<boost::archive::text_oarchive>(boost::archive::text_oarchive&, unsigned int const);
+template void Indices::serialize<boost::archive::text_iarchive>(boost::archive::text_iarchive&, unsigned int const);
+
+bool Indices::SortIndexVector(std::vector<Index> & vec) {
+  Indices ind (vec);
+  bool ret = ind.Sort();
+  vec = ind.get_vector();
+  return ret;
+}
 
 Indices::Indices(std::initializer_list<Index> list) : indices(list) { }
 
@@ -12,12 +33,20 @@ Indices::Indices(std::initializer_list<char> list) {
     });
 }
 
+Indices::Indices(std::vector<Index> vec) : indices(vec) { }
+
+Indices::Indices(std::set<Index> set)    : indices(set.begin(), set.end()) { }
+
 Indices::Indices(Indices const & other) : indices(other.indices) { }
 
 Indices::Indices(Indices const & other, std::map<Index, Index> const & exchange_map) : indices(std::vector<Index>()){
   for (Index index : other.indices) {
     indices.push_back(exchange_map.at(index));
   }
+}
+
+std::vector<Index> Indices::get_vector() const {
+  return indices;
 }
 
 void Indices::SortAndMakeUnique() {

@@ -1,8 +1,25 @@
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+
 #include "Tensor.h"
+
+template <typename Archive>
+void Tensor::serialize(Archive & ar, unsigned int const version) {
+  if (version > 0) {
+  } else {
+  }
+  ar & symmetric;
+  ar & antisymmetric;
+  ar & rank;
+  ar & name;
+}
+
+template void Tensor::serialize<boost::archive::text_oarchive>(boost::archive::text_oarchive&, unsigned int const);
+template void Tensor::serialize<boost::archive::text_iarchive>(boost::archive::text_iarchive&, unsigned int const);
 
 Tensor::Tensor () : rank(0), name("") { }
 
-Tensor::Tensor (Tensor const & other) : rank(other.rank), name(other.name), symmetric(other.symmetric), antisymmetric(other.antisymmetric) { }
+Tensor::Tensor (Tensor const & other) : symmetric(other.symmetric), antisymmetric(other.antisymmetric), rank(other.rank), name(other.name) { }
 
 Tensor::Tensor (int rank_set, std::string name_set) : rank(rank_set), name(name_set) { }
 

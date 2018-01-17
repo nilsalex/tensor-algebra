@@ -1,5 +1,19 @@
 #include "Rational.h"
 
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+
+template <typename Archive>
+void Rational::serialize(Archive & ar, unsigned int const version) {
+  if (version > 0) {
+  } else {
+  }
+  ar & fraction;
+}
+
+template void Rational::serialize<boost::archive::text_oarchive>(boost::archive::text_oarchive&, unsigned int const);
+template void Rational::serialize<boost::archive::text_iarchive>(boost::archive::text_iarchive&, unsigned int const);
+
 Rational::Rational() : Rational(std::make_pair(0, 1)) { }
 
 Rational::Rational(Fraction const & fraction_set) : fraction(Cancel(fraction_set)){ }

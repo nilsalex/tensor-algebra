@@ -5,11 +5,15 @@
 #include <utility>
 #include <vector>
 
+#include <boost/serialization/unique_ptr.hpp>
+#include <boost/serialization/utility.hpp>
+#include <boost/serialization/vector.hpp>
+
 #include "Indices.h"
 #include "Rational.h"
 #include "Tensor.h"
 
-enum EliminateReturn {ERROR, NO_ACTION, ETA_ETA_TO_DELTA, ETA_ETA_TO_TRACE, DELTA_OK, DELTA_TO_TRACE, EPSILON_TO_ZERO};
+enum Status {ERROR, NO_ACTION, ETA_ETA_TO_DELTA, ETA_ETA_TO_TRACE, ETA_PARTIAL_TO_BOX, DELTA_OK, DELTA_TO_TRACE, EPSILON_TO_ZERO, SYM_EVEN, SYM_ODD};
 
 typedef std::pair<std::unique_ptr<Indices>, std::unique_ptr<Tensor>> IndexMappingEntry;
 typedef std::vector<std::pair<std::unique_ptr<Indices>, std::unique_ptr<Tensor>>> IndexMapping;
@@ -20,6 +24,10 @@ bool operator< (IndexMappingEntry const & A, IndexMappingEntry const & B);
 class MonomialExpression {
  private:
   std::unique_ptr<IndexMapping> index_mapping;
+
+  friend class boost::serialization::access;
+  template <typename Archive>
+  void serialize(Archive & ar, unsigned int const version);
 
  public:
   MonomialExpression();
@@ -34,9 +42,15 @@ class MonomialExpression {
   void AddFactorRight(MonomialExpression const & other);
 
   void ExchangeIndices(Indices const & indices1, Indices const & indices2);
-  EliminateReturn EliminateEtaEta();
-  EliminateReturn EliminateEpsilon();
-  EliminateReturn EliminateDelta();
+
+  Status ApplySymmetriesToContractions();
+
+  Status EliminateEtaEta();
+  Status EliminateEtaPartial();
+  Status EliminateEpsilon();
+  Status EliminateDelta();
+  
+  void RenameDummies();
 
   Rational EvaluateIndices(std::map<Index, size_t> const & evaluation_map) const;
 

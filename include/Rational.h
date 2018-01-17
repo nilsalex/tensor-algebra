@@ -3,11 +3,18 @@
 #include <utility>
 #include <string>
 
+#include <boost/serialization/utility.hpp>
+
 typedef std::pair<int, unsigned int> Fraction;
 
 class Rational {
  private:
   Fraction fraction;
+
+  friend class boost::serialization::access;
+
+  template <typename Archive>
+  void serialize(Archive & ar, unsigned int const version);
 
  public:
   Rational();

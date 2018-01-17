@@ -1,6 +1,21 @@
 #include <sstream>
 
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+
 #include "Scalar.h"
+
+template <typename Archive>
+void Scalar::serialize(Archive & ar, unsigned int const version) {
+  if (version > 0) {
+  } else {
+  }
+  ar & variables;
+  ar & coefficient;
+}
+
+template void Scalar::serialize<boost::archive::text_oarchive>(boost::archive::text_oarchive&, unsigned int const);
+template void Scalar::serialize<boost::archive::text_iarchive>(boost::archive::text_iarchive&, unsigned int const);
 
 Scalar::Scalar() : variables(), coefficient(1,1) { }
 Scalar::Scalar(Scalar const & other) : variables(other.variables), coefficient(other.coefficient) { }
@@ -68,9 +83,9 @@ bool Scalar::operator< (Scalar const & other) const {
   } else {
     return coefficient < other.coefficient;
   }
-};
+}
 
 bool Scalar::operator== (Scalar const & other) const {
-  return (variables == other.variables) && (coefficient == other.coefficient) || (IsZero() && other.IsZero());
-};
+  return ((variables == other.variables) && (coefficient == other.coefficient)) || (IsZero() && other.IsZero());
+}
 

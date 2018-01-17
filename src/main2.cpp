@@ -3,6 +3,10 @@
 #include "Expression.h"
 #include "TensorMonomial.h"
 
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+
+#include <sstream>
 #include <iostream>
 
 int main () {
@@ -88,6 +92,19 @@ int main () {
   epsilon_ex.EliminateEpsilon();
 
   std::cout << epsilon_ex.GetLatexString() << std::endl;
+
+  std::stringstream ss;
+  boost::archive::text_oarchive oa {ss};
+  oa << epsilon_ex;
+
+  std::cout << ss.str() << std::endl;
+
+  Expression e_rec;
+
+  boost::archive::text_iarchive ia {ss};
+  ia >> e_rec;
+
+  std::cout << e_rec.GetLatexString() << std::endl;
 
   return 0;
 }

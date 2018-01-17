@@ -3,7 +3,12 @@
 #include <algorithm>
 #include <memory>
 #include <set>
+#include <string>
 #include <vector>
+
+#include <boost/serialization/unique_ptr.hpp>
+#include <boost/serialization/utility.hpp>
+#include <boost/serialization/vector.hpp>
 
 #include "MonomialExpression.h"
 #include "Rational.h"
@@ -19,9 +24,14 @@ class Expression {
  private:
   std::unique_ptr<Sum> summands;
 
+  friend class boost::serialization::access;
+  template <typename Archive>
+  void serialize(Archive & ar, unsigned int const version);
+
  public:
   Expression();
   Expression(Expression const & other); 
+  Expression & operator=(Expression const & other);
 
   void AddSummand (MonomialExpression const & monomial_expression);
   void AddSummand (MonomialExpression const & monomial_expression, Rational const & rational);
@@ -31,6 +41,7 @@ class Expression {
   void AddSummand (MonomialExpression const & monomial_expression, ScalarSum const & scalar_sum);
 
   void ApplyMonomialSymmetries();
+  void ApplyMonomialSymmetriesToContractions();
   void CanonicalisePrefactors();
   void CollectPrefactors();
   void EliminateVariable(size_t const variable);
@@ -38,8 +49,10 @@ class Expression {
   void EliminateDelta();
   void EliminateEpsilon();
   void EliminateEtaEta();
+  void EliminateEtaPartial();
   void EliminateZeros();
   void RedefineScalars();
+  void RenameDummies();
   void SortMonomials();
   void SortSummands();
   void SortSummandsByPrefactors();
@@ -56,6 +69,9 @@ class Expression {
   bool IsZero() const;
 
   ScalarSum EvaluateIndices(Indices const & indices, std::vector<size_t> const & numbers) const;
+
+  void SaveToFile(std::string const & filename) const;
+  void LoadFromFile(std::string const & filename);
 
   std::string const GetLatexString(std::string base_name = "e_", bool upper = true) const;
 

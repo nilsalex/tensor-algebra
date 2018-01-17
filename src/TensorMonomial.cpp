@@ -1,4 +1,19 @@
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+
 #include "TensorMonomial.h"
+
+template <typename Archive>
+void TensorMonomial::serialize(Archive & ar, unsigned int const version) {
+  if (version > 0) {
+  } else {
+  }
+  ar & boost::serialization::base_object<Tensor>(*this);
+  ar & factors;
+}
+
+template void TensorMonomial::serialize<boost::archive::text_oarchive>(boost::archive::text_oarchive&, unsigned int const);
+template void TensorMonomial::serialize<boost::archive::text_iarchive>(boost::archive::text_iarchive&, unsigned int const);
 
 TensorMonomial::TensorMonomial () : Tensor(0) { }
 

@@ -28,8 +28,6 @@ Expression Expression::NumericSimplify(Indices const & indices, bool print_matri
 
   bool status = true;
   size_t for_pos = indices.size() - 1;
-  size_t counter = 0;
-  size_t num_combs = pow(4, indices.size());
 
         ScalarSum sum_tmp = EvaluateIndices(indices, numbers);
         if (!sum_tmp.IsZero()) {
@@ -94,8 +92,8 @@ Expression Expression::NumericSimplify(Indices const & indices, bool print_matri
 
   std::set<size_t> coeff_removed; 
 
-  for (size_t column_counter = 0; column_counter < kq.cols(); ++column_counter) {
-    for (size_t row_counter = kq.rows() - 1; row_counter >= 0; --row_counter) {
+  for (int column_counter = 0; column_counter < kq.cols(); ++column_counter) {
+    for (int row_counter = kq.rows() - 1; row_counter >= 0; --row_counter) {
       if (kq(row_counter, column_counter) == 0 ) {
         continue;
       } else if (std::find(coeff_removed.begin(), coeff_removed.end(), row_counter) != coeff_removed.end()) {
@@ -116,4 +114,4 @@ Expression Expression::NumericSimplify(Indices const & indices, bool print_matri
   ret.RedefineScalars();
 
   return ret;
-};
+}

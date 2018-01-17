@@ -24,6 +24,34 @@ Expression Expression::ApplyGaugeSymmetry(Expression const & delta) const {
   gauge_term.EliminateEpsilon();
 
   gauge_term.ApplyMonomialSymmetries();
+
+  gauge_term.SortMonomials();
+  gauge_term.SortSummands();
+  gauge_term.CollectPrefactors();
+  gauge_term.CanonicalisePrefactors();
+  gauge_term.EliminateZeros();
+
+  gauge_term.ApplyMonomialSymmetriesToContractions();
+
+  gauge_term.ApplyMonomialSymmetries();
+  gauge_term.SortMonomials();
+  gauge_term.SortSummands();
+  gauge_term.CollectPrefactors();
+  gauge_term.CanonicalisePrefactors();
+  gauge_term.EliminateZeros();
+
+  gauge_term.EliminateEtaPartial();
+
+  gauge_term.ApplyMonomialSymmetries();
+  gauge_term.SortMonomials();
+  gauge_term.SortSummands();
+  gauge_term.CollectPrefactors();
+  gauge_term.CanonicalisePrefactors();
+  gauge_term.EliminateZeros();
+
+  gauge_term.RenameDummies();
+
+  gauge_term.ApplyMonomialSymmetries();
   gauge_term.SortMonomials();
   gauge_term.SortSummands();
   gauge_term.CollectPrefactors();
@@ -67,6 +95,30 @@ Expression Expression::ApplyGaugeSymmetry(Expression const & delta) const {
   std::cout << "null space basis: " << std::endl;
 
   MatrixXq kq = lu_decompq.kernel();
+
+  std::cout << kq << std::endl;
+
+  if (kq.cols() == 0) {
+    return gauge_term;
+  }
+
+  for (int column_counter = 0; column_counter < kq.cols(); ++column_counter) {
+  mpq_class pivot = 0;
+    for (int row_counter = 0; row_counter < kq.rows() ; ++row_counter) {
+      if (pivot == 0) {
+        if (kq(row_counter,column_counter) == 0) {
+          continue;
+        } else {
+          pivot = kq(row_counter, column_counter);
+          kq(row_counter, column_counter) = 1;
+        }
+      } else {
+        kq(row_counter, column_counter) = kq(row_counter, column_counter) / pivot;
+      }
+    }
+  }
+
+  std::cout<< "re-ordered:" << std::endl;
 
   std::cout << kq << std::endl;
 

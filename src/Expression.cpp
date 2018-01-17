@@ -1,10 +1,23 @@
-#include <iostream>
-#include <sstream>
+#include <fstream>
+
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 
 #include "Expression.h"
 #include "MonomialExpression.h"
 #include "Scalar.h"
 #include "ScalarSum.h"
+
+template <typename Archive>
+void Expression::serialize(Archive & ar, unsigned int const version) {
+  if (version > 0) {
+  } else {
+  }
+  ar & summands;
+}
+
+template void Expression::serialize<boost::archive::text_oarchive>(boost::archive::text_oarchive&, unsigned int const);
+template void Expression::serialize<boost::archive::text_iarchive>(boost::archive::text_iarchive&, unsigned int const);
 
 Expression::Expression() : summands(std::make_unique<std::vector<Summand>>()) { }
 
@@ -16,6 +29,12 @@ Expression::Expression(Expression const & other) : summands(std::make_unique<Sum
     std::swap((*(--summands->end())).first, monexp_new);
     std::swap((*(--summands->end())).second, scalar_new);
   });
+}
+
+Expression & Expression::operator=(Expression const & other) {
+  Expression tmp { other };
+  std::swap(summands, tmp.summands);
+  return *this;
 }
 
 void Expression::AddSummand (MonomialExpression const & monomial_expression, ScalarSum const & scalar_sum) {
@@ -43,9 +62,9 @@ void Expression::AddSummand (MonomialExpression const & monomial_expression, Rat
 }
 
 void Expression::SortMonomials() {
-  for (auto & summand : *summands) {
-    summand.first->Sort();
-  }
+  auto summands_new = std::make_unique<Sum>();
+  std::transform(summands->cbegin(), summands->cend(), std::back_inserter(*summands_new), [](auto const & a) { auto ret = std::make_pair(std::make_unique<MonomialExpression>(*a.first), std::make_unique<ScalarSum>(*a.second)); ret.first->Sort(); return ret; });
+  std::swap(summands, summands_new);
 }
 
 void Expression::ApplyMonomialSymmetries() {
@@ -54,6 +73,26 @@ void Expression::ApplyMonomialSymmetries() {
     if (!even) {
       summand.second->Negate();
     }
+  }
+}
+
+void Expression::ApplyMonomialSymmetriesToContractions() {
+  bool repeat = true;
+
+  while (repeat) {
+    repeat = false;
+    std::for_each(summands->begin(), summands->end(),
+      [&repeat](auto & a) {
+        Status ret = a.first->ApplySymmetriesToContractions();
+        if (ret == SYM_EVEN) {
+          repeat = true;
+        } else if (ret == SYM_ODD) {
+          a.second->Negate();
+          repeat = true;
+        } else if (ret != NO_ACTION) {
+          assert(false);
+        }
+      });
   }
 }
 
@@ -99,15 +138,22 @@ void Expression::EliminateDelta() {
   bool repeat = true;
 
   while (repeat) {
+    auto summands_new = std::make_unique<Sum>();
     repeat = false;
-    std::for_each(summands->begin(), summands->end(),
-      [&repeat](auto & a) {
-        EliminateReturn ret = a.first->EliminateDelta();
+    std::transform(summands->cbegin(), summands->cend(), std::back_inserter(*summands_new),
+      [&repeat](auto const & a) {
+        auto summand_new = std::make_pair(std::make_unique<MonomialExpression>(*a.first), std::make_unique<ScalarSum>(*a.second));;
+        Status ret = summand_new.first->EliminateDelta();
         if (ret == DELTA_OK || ret == DELTA_TO_TRACE) {
           repeat = true;
+        } else if (ret == ERROR) {
+          assert(false);
         }
+        return summand_new;
       });
+    std::swap(summands, summands_new);
   }
+
 }
 
 void Expression::EliminateEpsilon() {
@@ -117,10 +163,12 @@ void Expression::EliminateEpsilon() {
     repeat = false;
     std::for_each(summands->begin(), summands->end(),
       [&repeat](auto & a) {
-        EliminateReturn ret = a.first->EliminateEpsilon();
+        Status ret = a.first->EliminateEpsilon();
         if (ret == EPSILON_TO_ZERO) {
           a.second->MultiplyCoefficient(Rational(0, 1));
           repeat = true;
+        } else if (ret == ERROR) {
+          assert(false);
         }
       });
     EliminateZeros();
@@ -134,12 +182,31 @@ void Expression::EliminateEtaEta() {
     repeat = false;
     std::for_each(summands->begin(), summands->end(),
       [&repeat](auto & a) {
-        EliminateReturn ret = a.first->EliminateEtaEta();
+        Status ret = a.first->EliminateEtaEta();
         if (ret == ETA_ETA_TO_TRACE) {
           a.second->MultiplyCoefficient(Rational(4, 1));
           repeat = true;
         } else if (ret == ETA_ETA_TO_DELTA) {
           repeat = true;
+        } else if (ret == ERROR) {
+          assert(false);
+        }
+      });
+  }
+}
+
+void Expression::EliminateEtaPartial() {
+  bool repeat = true;
+
+  while (repeat) {
+    repeat = false;
+    std::for_each(summands->begin(), summands->end(),
+      [&repeat](auto & a) {
+        Status ret = a.first->EliminateEtaPartial();
+        if (ret == ETA_PARTIAL_TO_BOX) {
+          repeat = true;
+        } else if (ret != NO_ACTION) {
+          assert(false);
         }
       });
   }
@@ -249,6 +316,13 @@ void Expression::RedefineScalars() {
   std::swap(summands, summands_new);
 }
 
+void Expression::RenameDummies() {
+  std::for_each(summands->begin(), summands->end(),
+    [](auto & a) {
+      a.first->RenameDummies();
+    });
+}
+
 ScalarSum Expression::EvaluateIndices(Indices const & indices, std::vector<size_t> const & numbers) const {
   std::map<Index, size_t> evaluation_map;
 
@@ -288,6 +362,20 @@ Expression Expression::MultiplyOther(Expression const & other) const {
 }
 
 bool Expression::IsZero() const { return summands->empty(); }
+
+void Expression::SaveToFile(std::string const & filename) const {
+  std::ofstream file;
+  file.open(filename);
+  boost::archive::text_oarchive oa {file};
+  oa << *this;
+}
+
+void Expression::LoadFromFile(std::string const & filename) {
+  std::ifstream file;
+  file.open(filename);
+  boost::archive::text_iarchive ia {file};
+  ia >> *this;
+}
 
 std::string const Expression::GetLatexString(std::string base_name, bool upper) const {
   std::stringstream ss;

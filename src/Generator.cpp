@@ -1,6 +1,5 @@
 #include <algorithm>
 #include <cassert>
-#include <iostream>
 #include <string>
 #include <vector>
 
@@ -31,8 +30,6 @@ Expression Generator::Generate() {
   size_t variable_counter = 0;
 
   do {
-//    auto ind = perm.GetPermutation();
-//    std::for_each(ind.cbegin(), ind.cend(), [](auto & a) { std::cout << a << " ";}); std::cout << std::endl;
     Indices indices_perm = indices.Permutation(perm.GetPermutation());
     MonomialExpression monexpr(T, indices_perm);
     expression->AddSummand(monexpr, ++variable_counter);
@@ -61,11 +58,6 @@ Expression Generator::Generate() {
         for (size_t counter = 0; counter + 4 < indices.size(); ++counter) {
           perm_indices[counter + 4] = perm_epsilon[perm_eta.GetPermutation()[counter] + 4];
         }
-//        std::for_each(perm_indices.cbegin(), perm_indices.cend(), 
-//          [](auto & a) {
-//            std::cout << a << " ";
-//          });
-//        std::cout << std::endl;
         Indices indices_perm = indices.Permutation(perm_indices);
         MonomialExpression monexpr(S, indices_perm);
 
@@ -91,4 +83,4 @@ Expression Generator::Generate() {
   expression->RedefineScalars();
 
   return *expression;
-}; 
+} 

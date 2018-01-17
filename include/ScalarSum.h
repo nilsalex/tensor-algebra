@@ -6,11 +6,18 @@
 #include <string>
 #include <vector>
 
+#include <boost/serialization/unique_ptr.hpp>
+#include <boost/serialization/vector.hpp>
+
 #include "Scalar.h"
 
 class ScalarSum {
  private:
   std::unique_ptr<std::vector<std::unique_ptr<Scalar>>> scalars;
+
+  friend class boost::serialization::access;
+  template <typename Archive>
+  void serialize(Archive & ar, unsigned int const version);
  
  public:
   ScalarSum();

@@ -2,16 +2,28 @@
 #include <cassert>
 #include <sstream>
 
-#include <iostream>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 
 #include "Scalar.h"
 #include "ScalarSum.h"
 
+template <typename Archive>
+void ScalarSum::serialize(Archive & ar, unsigned int const version) {
+  if (version > 0) {
+  } else {
+  }
+  ar & scalars;
+}
+
+template void ScalarSum::serialize<boost::archive::text_oarchive>(boost::archive::text_oarchive&, unsigned int const);
+template void ScalarSum::serialize<boost::archive::text_iarchive>(boost::archive::text_iarchive&, unsigned int const);
+
 ScalarSum::ScalarSum() : scalars(std::make_unique<std::vector<std::unique_ptr<Scalar>>>()) { }
 ScalarSum::ScalarSum(Scalar const & scalar) : scalars(std::make_unique<std::vector<std::unique_ptr<Scalar>>>()) { scalars->push_back(std::make_unique<Scalar>(scalar)); }
 
-void ScalarSum::Negate() { for (auto & scalar : *scalars) { scalar->Negate(); } };
-void ScalarSum::DivideByTwo() { for (auto & scalar : *scalars) { scalar->DivideByTwo(); } };
+void ScalarSum::Negate() { for (auto & scalar : *scalars) { scalar->Negate(); } }
+void ScalarSum::DivideByTwo() { for (auto & scalar : *scalars) { scalar->DivideByTwo(); } }
 
 void ScalarSum::AddScalar(Scalar const & other) { if (!other.IsZero()) { scalars->push_back(std::make_unique<Scalar>(other));} }
 void ScalarSum::MergeWithOther(ScalarSum const & other) { scalars->insert(scalars->end(), std::make_move_iterator(other.scalars->begin()), std::make_move_iterator(other.scalars->end())); }

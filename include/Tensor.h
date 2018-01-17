@@ -5,12 +5,18 @@
 #include <utility>
 #include <vector>
 
+#include <boost/serialization/string.hpp>
+
 #include "Indices.h"
 
 class Tensor {
  private:
   bool symmetric = false;
   bool antisymmetric = false;
+
+  friend class boost::serialization::access;
+  template <typename Archive>
+  void serialize(Archive & ar, unsigned int const version);
 
  protected:
   size_t rank;
