@@ -20,6 +20,8 @@ Rational::Rational(Fraction const & fraction_set) : fraction(Cancel(fraction_set
 
 Rational::Rational(int numerator, unsigned int denominator) : Rational(std::make_pair(numerator, denominator)) { }
 
+Rational::Rational(mpq_class q) : Rational(q.get_num().get_si(), q.get_den().get_ui()) { }
+
 Fraction Rational::get_fraction() const { return fraction; }
 
 bool Rational::IsPositive() const { return fraction.first > 0; }

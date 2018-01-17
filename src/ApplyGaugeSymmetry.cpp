@@ -102,25 +102,50 @@ Expression Expression::ApplyGaugeSymmetry(Expression const & delta) const {
     return gauge_term;
   }
 
-  for (int column_counter = 0; column_counter < kq.cols(); ++column_counter) {
-  mpq_class pivot = 0;
-    for (int row_counter = 0; row_counter < kq.rows() ; ++row_counter) {
-      if (pivot == 0) {
-        if (kq(row_counter,column_counter) == 0) {
-          continue;
-        } else {
-          pivot = kq(row_counter, column_counter);
-          kq(row_counter, column_counter) = 1;
-        }
-      } else {
-        kq(row_counter, column_counter) = kq(row_counter, column_counter) / pivot;
+  std::map<size_t, size_t> coefficient_rmap;
+  std::for_each(coefficient_map.begin(), coefficient_map.end(), [&coefficient_rmap](auto a) { coefficient_rmap.insert(std::make_pair(a.second, a.first)); });
+
+  std::map<size_t, ScalarSum> replace_map;
+
+  for (int row_counter = 0; row_counter < kq.rows(); ++row_counter) {
+    bool is_zero = true;
+    for (int column_counter = 0; column_counter < kq.cols(); ++column_counter) {
+      if (kq(row_counter, column_counter) != 0) {
+        is_zero = false;
       }
+    }
+    if (is_zero) {
+      replace_map[coefficient_rmap[row_counter]] = ScalarSum();
     }
   }
 
-  std::cout<< "re-ordered:" << std::endl;
+  for (int column_counter = 0; column_counter < kq.cols(); ++column_counter) {
+    size_t index = 0;
+    ScalarSum rep;
+    mpq_class pivot = 0;
+    for (int row_counter = kq.rows() - 1; row_counter > -1; --row_counter) {
+      if (pivot == 0) {
+        if (kq(row_counter, column_counter) == 0) {
+          continue;
+        } else {
+          pivot = kq(row_counter, column_counter);
+          index = row_counter;
+        }
+      } else {
+        rep.AddScalar(Scalar(Rational(-kq(row_counter, column_counter) / pivot), coefficient_rmap[row_counter]));
+      }
+    }
+    rep.Sort();
+    replace_map[coefficient_rmap[index]] = rep;
+  }
 
-  std::cout << kq << std::endl;
+  std::for_each(replace_map.begin(), replace_map.end(), [](auto const & a) { std::cout << "e_" << a.first << " --> " << a.second.ToString() << std::endl; });
 
-  return gauge_term;
+  Expression expression_copy = *this;
+
+  std::for_each(replace_map.begin(), replace_map.end(), [&expression_copy](auto const & a) { expression_copy.SubstituteVariable(a.first, a.second); });
+
+  expression_copy.EliminateZeros();
+
+  return expression_copy;
 }

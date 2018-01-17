@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <bitset>
 #include <cassert>
 #include <cmath>
 #include <iostream>
@@ -24,38 +25,27 @@ Expression Expression::NumericSimplify(Indices const & indices, bool print_matri
   std::set<ScalarSum> sum_set;
   std::set<size_t> coefficient_set;
 
-  std::vector<size_t> numbers (indices.size());
+  std::string n;
 
-  bool status = true;
-  size_t for_pos = indices.size() - 1;
+  std::bitset<64> bs(0);
+  bs[2 * indices.size()] = true;
+  size_t number_of_combinations = bs.to_ulong();
 
-        ScalarSum sum_tmp = EvaluateIndices(indices, numbers);
-        if (!sum_tmp.IsZero()) {
-          coefficient_set.merge(sum_tmp.CoefficientSet());
-          sum_set.insert(sum_tmp);
-        }
-
-  while (status) {
-    if (numbers[for_pos] < 3) {
-      ++numbers[for_pos];
-      {
-
-        ScalarSum sum_tmp = EvaluateIndices(indices, numbers);
-        if (!sum_tmp.IsZero()) {
-          coefficient_set.merge(sum_tmp.CoefficientSet());
-          sum_set.insert(sum_tmp);
-        }
-
-      }
-        for_pos = indices.size() - 1;
-    } else {
-      numbers[for_pos] = 0;
-      if (for_pos == 0) {
-        status = false;
-      } else {
-        --for_pos;
-      }
+  for (size_t counter = 0; counter < number_of_combinations; ++counter) {
+    std::vector<size_t> numbers (indices.size());
+    std::bitset<64> binary_representation(counter);
+    for(size_t digit_counter = 0; digit_counter < indices.size(); ++digit_counter) {
+      unsigned int binary_digit_a = static_cast<unsigned int>(binary_representation[2 * digit_counter + 1]);
+      unsigned int binary_digit_b = static_cast<unsigned int>(binary_representation[2 * digit_counter]);
+      *(numbers.rbegin() + digit_counter) = 2 * binary_digit_a + binary_digit_b;
     }
+
+    ScalarSum sum_tmp = EvaluateIndices(indices, numbers);
+    if (!sum_tmp.IsZero()) {
+      coefficient_set.merge(sum_tmp.CoefficientSet());
+      sum_set.insert(sum_tmp);
+    }
+
   }
 
   std::map<size_t, size_t> coefficient_map;

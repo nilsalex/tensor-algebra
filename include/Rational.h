@@ -3,6 +3,8 @@
 #include <utility>
 #include <string>
 
+#include <gmpxx.h>
+
 #include <boost/serialization/utility.hpp>
 
 typedef std::pair<int, unsigned int> Fraction;
@@ -20,6 +22,7 @@ class Rational {
   Rational();
   Rational(Fraction const & fraction);
   Rational(int numerator, unsigned int denominator);
+  Rational(mpq_class q);
 
   Fraction get_fraction() const;
 

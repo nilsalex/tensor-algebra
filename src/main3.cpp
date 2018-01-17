@@ -15,8 +15,8 @@ int main () {
 
   Expression simplified;
 
-  if (!load_from_file) {
     Indices indices  {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'p', 'q'};
+  if (!load_from_file) {
   
     Indices indices2 {'b', 'a', 'c', 'd', 'e', 'f', 'g', 'h', 'p', 'q'};
     Indices indices3 {'a', 'b', 'd', 'c', 'e', 'f', 'g', 'h', 'p', 'q'};
@@ -77,9 +77,11 @@ int main () {
 
   delta.ExchangeSymmetrise(indices_delta, indices_delta2, false);
 
-  Expression gauge_term = simplified.ApplyGaugeSymmetry(delta);
+  Expression finalexpr = simplified.ApplyGaugeSymmetry(delta);
 
-//  std::cout << gauge_term.GetLatexString() << std::endl;
-  
+  std::cout << finalexpr.GetLatexString() << std::endl;
+
+  finalexpr.NumericSimplify(indices, true);
+
   return 0;
 }
