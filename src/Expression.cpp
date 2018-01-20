@@ -233,6 +233,13 @@ void Expression::SubstituteVariable(size_t const variable_old, ScalarSum const &
     });
 }
 
+void Expression::SubstituteVariables(std::map<size_t, ScalarSum> substitution_map) {
+  std::for_each(summands->begin(), summands->end(),
+    [substitution_map](auto & a) {
+      a.second->SubstituteVariables(substitution_map);
+    });
+}
+
 void Expression::EliminateVariable(size_t const variable) {
   std::for_each(summands->begin(), summands->end(), [variable](auto & a) { a.second->EliminateVariable(variable); });
 }

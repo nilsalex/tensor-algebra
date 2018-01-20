@@ -25,6 +25,7 @@ Scalar::Scalar(size_t variable_set) : variables(), coefficient(1,1) { variables.
 Scalar::Scalar(Rational coefficient_set, size_t variable_set) : variables(), coefficient(coefficient_set) { variables.insert(variable_set); }
 
 Rational Scalar::get_coefficient() const { return coefficient; }
+std::multiset<size_t> Scalar::get_variables() const { return variables; }
 
 size_t Scalar::Order() const { return (IsZero() ? 0 : variables.size()); }
 

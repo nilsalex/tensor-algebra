@@ -62,7 +62,7 @@ int main () {
       simplified.SaveToFile("simplified_area_kinetic.prs");
     }
   
-      std::cout << "Simplified ansatz:" << std::endl;
+      std::cout << "Simplified ansatz without numerical linear dependencies (loaded from savefile):" << std::endl;
       std::cout << simplified.GetLatexString() << std::endl;
 
       Indices indices_delta   {'e', 'g', 'f', 'p', 'q', 'h'};
@@ -132,7 +132,7 @@ int main () {
       simplified.SaveToFile("simplified_area_mass.prs");
     }
   
-      std::cout << "Simplified ansatz:" << std::endl;
+      std::cout << "Simplified ansatz without numerical linear dependencies (loaded from savefile):" << std::endl;
       std::cout << simplified.GetLatexString() << std::endl;
 
       Indices indices_delta   {'e', 'g', 'f', 'h'};
@@ -166,7 +166,7 @@ int main () {
   std::cout << "#########################################" << std::endl;
   std::cout << "The most general ansatz for the mass " << std::endl;
   std::cout << "term of area metric gravity reads:" << std::endl;
-  std::cout << final_expr_mass.GetLatexString() << std::endl;
+  std::cout << final_expr_mass.GetLatexString("f_", true) << std::endl;
 
   return 0;
 }

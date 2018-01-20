@@ -137,8 +137,9 @@ Expression Expression::ApplyGaugeSymmetry(Expression const & delta) const {
 
   Expression expression_copy = *this;
 
-  std::for_each(replace_map.begin(), replace_map.end(), [&expression_copy](auto const & a) { expression_copy.SubstituteVariable(a.first, a.second); });
+  expression_copy.SubstituteVariables(replace_map);
 
+  expression_copy.CanonicalisePrefactors();
   expression_copy.EliminateZeros();
 
   return expression_copy;

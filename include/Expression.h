@@ -46,6 +46,7 @@ class Expression {
   void CollectPrefactors();
   void EliminateVariable(size_t const variable);
   void SubstituteVariable(size_t const variable_old, ScalarSum const & scalar_sum_new);
+  void SubstituteVariables(std::map<size_t, ScalarSum> substitution_map);
   void EliminateDelta();
   void EliminateEpsilon();
   void EliminateEtaEta();

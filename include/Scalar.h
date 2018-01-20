@@ -28,6 +28,7 @@ class Scalar {
   Scalar(Rational coefficient_set, size_t variable_set);
 
   Rational get_coefficient() const;
+  std::multiset<size_t> get_variables() const;
 
   size_t Order() const;
 

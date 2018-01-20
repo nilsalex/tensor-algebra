@@ -99,6 +99,32 @@ void ScalarSum::SubstituteVariable(size_t const variable, ScalarSum const & scal
   std::swap(scalars, scalars_new);
 }
 
+void ScalarSum::SubstituteVariables(std::map<size_t, ScalarSum> substitution_map) {
+  ScalarSum scalar_sum_new;
+  std::for_each(scalars->cbegin(), scalars->cend(),
+    [substitution_map,&scalar_sum_new] (auto const & a) {
+      ScalarSum substituted;
+      if (a->Order() == 0) {
+        substituted.AddScalar(*a);
+      } else {
+        substituted.AddScalar(Scalar(a->get_coefficient()));
+        auto variables = a->get_variables();
+        std::for_each(variables.begin(), variables.end(), 
+          [&substituted,substitution_map] (auto v) {
+            ScalarSum sum_tmp;
+            sum_tmp.AddScalar(v);
+            auto it = substitution_map.find(v);
+            if (it != substitution_map.end()) {
+              sum_tmp.SubstituteVariable(it->first, it->second);
+            }
+            substituted = substituted.MultiplyOther(sum_tmp);
+          });
+      }
+      scalar_sum_new.MergeWithOther(substituted);
+    });
+  std::swap(scalars, scalar_sum_new.scalars);
+}
+
 void ScalarSum::Sort() {
   std::sort(scalars->begin(), scalars->end(), 
     [](auto & a, auto & b) {
