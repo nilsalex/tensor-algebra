@@ -209,3 +209,65 @@ TEST(Expression, EliminateEpsilon) {
 
   EXPECT_EQ("0", expr.GetLatexString());
 }
+
+TEST(Expression, EliminateEpsilonEpsilonI) {
+  Tensor epsilon (4, "epsilon");
+  Tensor epsilonI (4, "epsilonI");
+  Tensor xi (1, "xi");
+
+  epsilon.SetAntisymmetric();
+  epsilonI.SetAntisymmetric();
+
+  TensorMonomial tm;
+
+  tm.AddFactorRight(epsilon);
+  tm.AddFactorRight(epsilonI);
+  tm.AddFactorRight(xi);
+
+  Indices indices { 'a', 'b', 'c', 'd', 'p', 'q', 'r', 's', 'x' };
+
+  MonomialExpression me (tm, indices);
+
+  Expression expr;
+
+  expr.AddSummand(me);
+
+  EXPECT_EQ("1 epsilon^{ a b c d } epsilonI^{ p q r s } xi^{ x }", expr.GetLatexString());
+
+  expr.EliminateEpsilonEpsilonI();
+
+  EXPECT_EQ("- 1 delta^{ a p } delta^{ b q } delta^{ c r } delta^{ d s }\n+ 1 delta^{ a p } delta^{ b q } delta^{ c s } delta^{ d r }\n+ 1 delta^{ a p } delta^{ b r } delta^{ c q } delta^{ d s }\n- 1 delta^{ a p } delta^{ b r } delta^{ c s } delta^{ d q }\n- 1 delta^{ a p } delta^{ b s } delta^{ c q } delta^{ d r }\n+ 1 delta^{ a p } delta^{ b s } delta^{ c r } delta^{ d q }\n+ 1 delta^{ a q } delta^{ b p } delta^{ c r } delta^{ d s }\n- 1 delta^{ a q } delta^{ b p } delta^{ c s } delta^{ d r }\n- 1 delta^{ a q } delta^{ b r } delta^{ c p } delta^{ d s }\n+ 1 delta^{ a q } delta^{ b r } delta^{ c s } delta^{ d p }\n+ 1 delta^{ a q } delta^{ b s } delta^{ c p } delta^{ d r }\n- 1 delta^{ a q } delta^{ b s } delta^{ c r } delta^{ d p }\n- 1 delta^{ a r } delta^{ b p } delta^{ c q } delta^{ d s }\n+ 1 delta^{ a r } delta^{ b p } delta^{ c s } delta^{ d q }\n+ 1 delta^{ a r } delta^{ b q } delta^{ c p } delta^{ d s }\n- 1 delta^{ a r } delta^{ b q } delta^{ c s } delta^{ d p }\n- 1 delta^{ a r } delta^{ b s } delta^{ c p } delta^{ d q }\n+ 1 delta^{ a r } delta^{ b s } delta^{ c q } delta^{ d p }\n+ 1 delta^{ a s } delta^{ b p } delta^{ c q } delta^{ d r }\n- 1 delta^{ a s } delta^{ b p } delta^{ c r } delta^{ d q }\n- 1 delta^{ a s } delta^{ b q } delta^{ c p } delta^{ d r }\n+ 1 delta^{ a s } delta^{ b q } delta^{ c r } delta^{ d p }\n+ 1 delta^{ a s } delta^{ b r } delta^{ c p } delta^{ d q }\n- 1 delta^{ a s } delta^{ b r } delta^{ c q } delta^{ d p }", expr.GetLatexString());
+}
+
+TEST(Expression, EliminateDelta) {
+  Tensor delta (2, "delta");
+  delta.SetSymmetric();
+
+  Tensor T (2, "T");
+
+  TensorMonomial tm;
+
+  tm.AddFactorRight(delta);
+  tm.AddFactorRight(T);
+
+  Indices indices  { 'a', 'a', 'x', 'k' };
+  Indices indices2 { 'a', 'x', 'x', 'k' };
+
+  MonomialExpression me  (tm, indices );
+  MonomialExpression me2 (tm, indices2);
+
+  Expression expr;
+  expr.AddSummand(me);
+
+  Expression expr2;
+  expr2.AddSummand(me2);
+
+  EXPECT_EQ("1 delta^{ a a } T^{ x k }", expr.GetLatexString());
+  EXPECT_EQ("1 delta^{ a x } T^{ x k }", expr2.GetLatexString());
+
+  expr.EliminateDelta();
+  expr2.EliminateDelta();
+
+  EXPECT_EQ("4 T^{ x k }", expr.GetLatexString());
+  EXPECT_EQ("1 T^{ a k }", expr2.GetLatexString());
+}

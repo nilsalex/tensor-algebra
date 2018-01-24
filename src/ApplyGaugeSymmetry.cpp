@@ -17,9 +17,15 @@ Expression Expression::ApplyGaugeSymmetry(Expression const & delta) const {
   Expression gauge_term = this->MultiplyOther(delta);
 
   gauge_term.SortMonomials();
+  gauge_term.EliminateEpsilonEpsilonI();
+  gauge_term.EliminateEpsilonI();
+
+  gauge_term.SortMonomials();
   gauge_term.EliminateEtaEta();
+
   gauge_term.SortMonomials();
   gauge_term.EliminateDelta();
+
   gauge_term.SortMonomials();
   gauge_term.EliminateEpsilon();
 
@@ -41,6 +47,7 @@ Expression Expression::ApplyGaugeSymmetry(Expression const & delta) const {
   gauge_term.EliminateZeros();
 
   gauge_term.EliminateEtaPartial();
+  gauge_term.EliminateEpsilon();
 
   gauge_term.ApplyMonomialSymmetries();
   gauge_term.SortMonomials();
@@ -49,6 +56,7 @@ Expression Expression::ApplyGaugeSymmetry(Expression const & delta) const {
   gauge_term.CanonicalisePrefactors();
   gauge_term.EliminateZeros();
 
+  gauge_term.EliminateEtaRankOne();
   gauge_term.RenameDummies();
 
   gauge_term.ApplyMonomialSymmetries();
@@ -57,6 +65,10 @@ Expression Expression::ApplyGaugeSymmetry(Expression const & delta) const {
   gauge_term.CollectPrefactors();
   gauge_term.CanonicalisePrefactors();
   gauge_term.EliminateZeros();
+  gauge_term.SortSummandsByPrefactors();
+
+  std::cout << "Gauge transform:" << std::endl;
+  std::cout << delta.GetLatexString() << std::endl;
 
   std::cout << "The gauge term reads:" << std::endl;
   std::cout << gauge_term.GetLatexString() << std::endl;

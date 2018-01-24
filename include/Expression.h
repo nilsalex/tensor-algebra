@@ -49,8 +49,11 @@ class Expression {
   void SubstituteVariables(std::map<size_t, ScalarSum> substitution_map);
   void EliminateDelta();
   void EliminateEpsilon();
+  void EliminateEpsilonEpsilonI();
+  void EliminateEpsilonI();
   void EliminateEtaEta();
   void EliminateEtaPartial();
+  void EliminateEtaRankOne();
   void EliminateZeros();
   void RedefineScalars();
   void RenameDummies();

@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <fstream>
 
 #include <boost/archive/text_oarchive.hpp>
@@ -7,6 +8,7 @@
 #include "MonomialExpression.h"
 #include "Scalar.h"
 #include "ScalarSum.h"
+#include "TensorMonomial.h"
 
 template <typename Archive>
 void Expression::serialize(Archive & ar, unsigned int const version) {
@@ -144,7 +146,10 @@ void Expression::EliminateDelta() {
       [&repeat](auto const & a) {
         auto summand_new = std::make_pair(std::make_unique<MonomialExpression>(*a.first), std::make_unique<ScalarSum>(*a.second));;
         Status ret = summand_new.first->EliminateDelta();
-        if (ret == DELTA_OK || ret == DELTA_TO_TRACE) {
+        if (ret == DELTA_OK ) {
+          repeat = true;
+        } else if (ret == DELTA_TO_TRACE) {
+          summand_new.second->MultiplyCoefficient(Rational(4, 1));
           repeat = true;
         } else if (ret == ERROR) {
           assert(false);
@@ -172,6 +177,93 @@ void Expression::EliminateEpsilon() {
         }
       });
     EliminateZeros();
+  }
+}
+
+void Expression::EliminateEpsilonI() {
+  bool repeat = true;
+
+  while (repeat) {
+    repeat = false;
+    std::for_each(summands->begin(), summands->end(),
+      [&repeat](auto & a) {
+        Status ret = a.first->EliminateEpsilonI();
+        if (ret == EPSILONI) {
+          repeat = true;
+        } else if (ret != NO_ACTION) {
+          assert(false);
+        }
+      });
+    EliminateZeros();
+  }
+}
+
+static bool Sort(std::vector<size_t> vec) {
+  if (vec.empty()) {
+    return true;
+  }
+  unsigned int swap_counter = 0;
+  bool swapped;
+  do {
+    swapped = false;
+    for (size_t counter = 0; counter < vec.size() - 1; ++counter) {
+      if (vec[counter] > vec[counter + 1]) {
+        std::swap(vec[counter], vec[counter + 1]);
+        swapped = true;
+        swap_counter += 1;
+      }
+    }
+  } while (swapped);
+  return (swap_counter % 2 == 0) ? true : false; 
+}
+
+void Expression::EliminateEpsilonEpsilonI() {
+  bool repeat = true;
+
+  while (repeat) {
+    auto summands_new = std::make_unique<Sum>();
+    repeat = false;
+    std::for_each(summands->begin(), summands->end(),
+      [&repeat,&summands_new](auto const & a) {
+        auto indices_pair = a.first->EliminateEpsilonEpsilonI();   
+
+        if ( indices_pair.first.size() == 0 && indices_pair.second.size() == 0 ) {
+          summands_new->push_back(std::make_pair(std::make_unique<MonomialExpression>(*a.first), std::make_unique<ScalarSum>(*a.second)));
+        } else if ( indices_pair.first.size() == 4 && indices_pair.second.size() == 4 ) {
+          Tensor delta (2, "delta");
+          delta.SetSymmetric();
+
+          TensorMonomial four_deltas;
+          four_deltas.AddFactorRight(delta);
+          four_deltas.AddFactorRight(delta);
+          four_deltas.AddFactorRight(delta);
+          four_deltas.AddFactorRight(delta);
+
+          std::vector<size_t> index_numbers { 0, 1, 2, 3 };
+          do {
+            auto index_number_copy = index_numbers;
+            bool sign = Sort(index_number_copy);
+
+            ScalarSum coeff = *a.second;
+            if (sign) {
+              coeff.Negate(); // Attention! Additional minus sign because epsilon epsilonI = - delta delta delta delta
+            }
+
+            Indices four_deltas_indices { indices_pair.first.at(0), indices_pair.second.at(index_numbers.at(0)),
+                                          indices_pair.first.at(1), indices_pair.second.at(index_numbers.at(1)), 
+                                          indices_pair.first.at(2), indices_pair.second.at(index_numbers.at(2)), 
+                                          indices_pair.first.at(3), indices_pair.second.at(index_numbers.at(3)) };
+            
+            MonomialExpression four_deltas_me (four_deltas, four_deltas_indices);
+            summands_new->push_back(std::make_pair(std::make_unique<MonomialExpression>(four_deltas_me), std::make_unique<ScalarSum>(coeff)));
+          } while (std::next_permutation(index_numbers.begin(), index_numbers.end()));
+
+
+        } else {
+          assert(false);
+        }
+      });
+    std::swap(summands, summands_new);
   }
 }
 
@@ -203,7 +295,24 @@ void Expression::EliminateEtaPartial() {
     std::for_each(summands->begin(), summands->end(),
       [&repeat](auto & a) {
         Status ret = a.first->EliminateEtaPartial();
-        if (ret == ETA_PARTIAL_TO_BOX) {
+        if (ret == ETA_PARTIAL_CONTRACTION) {
+          repeat = true;
+        } else if (ret != NO_ACTION) {
+          assert(false);
+        }
+      });
+  }
+}
+
+void Expression::EliminateEtaRankOne() {
+  bool repeat = true;
+
+  while (repeat) {
+    repeat = false;
+    std::for_each(summands->begin(), summands->end(),
+      [&repeat](auto & a) {
+        Status ret = a.first->EliminateEtaRankOne();
+        if (ret == ETA_CONTRACTION) {
           repeat = true;
         } else if (ret != NO_ACTION) {
           assert(false);

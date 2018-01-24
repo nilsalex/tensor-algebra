@@ -347,6 +347,60 @@ void MonomialExpression::Sort() {
   std::sort(index_mapping->begin(), index_mapping->end());
 }
 
+std::pair<std::vector<Index>, std::vector<Index>> MonomialExpression::GetFreeAndDummyIndices() const {
+  std::vector<Index> free_indices;
+  std::vector<Index> dummy_indices;
+
+  std::for_each(index_mapping->cbegin(), index_mapping->cend(), [&free_indices,&dummy_indices](auto const & a) {
+    std::vector<Index> indices { a.first->get_vector() };
+    std::for_each(indices.begin(), indices.end(), [&free_indices, &dummy_indices] (auto const & i) {
+        if (std::find(dummy_indices.begin(), dummy_indices.end(), i) != dummy_indices.end()) {
+        } else if (std::find(free_indices.begin(), free_indices.end(), i) == free_indices.end()) {
+          free_indices.push_back(i);
+        } else {
+          dummy_indices.push_back(i);
+          free_indices.erase(std::remove(free_indices.begin(), free_indices.end(), i), free_indices.end());
+        }
+      });
+    });
+
+  return std::make_pair(free_indices, dummy_indices);
+}
+
+std::vector<Index> MonomialExpression::GetFreeIndices() const {
+  return GetFreeAndDummyIndices().first;
+}
+
+std::vector<Index> MonomialExpression::GetDummyIndices() const {
+  return GetFreeAndDummyIndices().second;
+}
+
+std::vector<Index> MonomialExpression::GetNonFreeIndices() const {
+  std::vector<Index> free_indices = GetFreeIndices();
+
+  std::vector<Index> nonfree = new_dummies_template;
+
+  nonfree.erase(std::remove_if(nonfree.begin(), nonfree.end(),
+    [&free_indices] (auto & a) {
+      return (std::find(free_indices.cbegin(), free_indices.cend(), a) != free_indices.cend());
+    }), nonfree.end());
+
+  return nonfree;
+}
+
+std::vector<Index> MonomialExpression::GetUnusedIndices() const {
+  auto [free_indices, dummy_indices] = GetFreeAndDummyIndices();
+
+  std::vector<Index> unused = new_dummies_template;
+
+  unused.erase(std::remove_if(unused.begin(), unused.end(),
+    [&free_indices,&dummy_indices] (auto & a) {
+      return (std::find(free_indices.cbegin(), free_indices.cend(), a) != free_indices.cend() || std::find(dummy_indices.cbegin(), dummy_indices.cend(), a) != dummy_indices.cend());
+    }), unused.end());
+
+  return unused;
+}
+
 bool MonomialExpression::ApplySymmetries() {
   bool even = true;
 
@@ -438,7 +492,7 @@ Status MonomialExpression::ApplySymmetriesToContractions() {
     });
 
   std::map<Index, Index> exchange_map;
-  bool is_even;
+  bool is_even = true;
   auto it = std::find_if(index_mapping->cbegin(), index_mapping->cend(),
     [&is_even,&exchange_map,&dummy_indices,this](auto const & a) {
       if ((!a.second->IsSymmetric() && !a.second->IsAntisymmetric()) || a.first->size() < 2 ) {
@@ -483,7 +537,8 @@ Status MonomialExpression::ApplySymmetriesToContractions() {
         exchange_map.insert(std::make_pair(dummy_vec.at(counter), dummy_vec_sorted.at(counter)));
       }
 
-      is_even = a.second->IsSymmetric() ? true : !_is_even;
+      assert(!(a.second->IsSymmetric() && a.second->IsAntisymmetric()));
+      is_even = _is_even || !a.second->IsAntisymmetric();
 
       return true;
   });
@@ -515,31 +570,12 @@ Status MonomialExpression::ApplySymmetriesToContractions() {
 }
 
 void MonomialExpression::RenameDummies() {
-  std::vector<Index> free_indices;
-  std::vector<Index> dummy_indices;
-
-  std::for_each(index_mapping->cbegin(), index_mapping->cend(), [&free_indices,&dummy_indices](auto const & a) {
-    std::vector<Index> indices { a.first->get_vector() };
-    std::for_each(indices.begin(), indices.end(), [&free_indices, &dummy_indices] (auto const & i) {
-        if (std::find(dummy_indices.begin(), dummy_indices.end(), i) != dummy_indices.end()) {
-        } else if (std::find(free_indices.begin(), free_indices.end(), i) == free_indices.end()) {
-          free_indices.push_back(i);
-        } else {
-          dummy_indices.push_back(i);
-          free_indices.erase(std::remove(free_indices.begin(), free_indices.end(), i), free_indices.end());
-        }
-      });
-    });
+  std::vector<Index> dummy_indices = GetDummyIndices();
 
   if (dummy_indices.empty()) {
     return;
   } else {
-    std::vector<Index> new_dummies = new_dummies_template;
-
-    new_dummies.erase(std::remove_if(new_dummies.begin(), new_dummies.end(),
-      [&free_indices] (auto & a) {
-        return (std::find(free_indices.cbegin(), free_indices.cend(), a) != free_indices.cend());
-      }), new_dummies.end());
+    std::vector<Index> new_dummies = GetNonFreeIndices();
 
     std::map<Index, Index> dummy_map;
     for (size_t counter = 0; counter < dummy_indices.size(); ++counter) {
@@ -568,18 +604,20 @@ void MonomialExpression::RenameDummies() {
 Status MonomialExpression::EliminateEtaPartial() {
   std::vector<Index> overlap;
   auto it_eta = index_mapping->cend();
+  // looking for partial which is contracted with an eta
   auto it_partial = std::find_if(index_mapping->cbegin(), index_mapping->cend(),
     [this,&it_eta,&overlap](auto & a) {
-      if (a.second->get_name() != "partial" || a.first->size() < 2) {
+      if (a.second->get_name() != "partial") {
         return false;
       }
+  // looking an eta which is contracted with our partial
       it_eta = std::find_if(index_mapping->cbegin(), index_mapping->cend(),
         [&a,&overlap,&it_eta](auto & b) {
           if (b.second->get_name() != "eta" || b.first->size() != 2) {
             return false;
           }
           overlap = a.first->Overlap(*b.first).get_vector();
-          return overlap.size() == 2;
+          return overlap.size() > 0;
       });
       if (it_eta == index_mapping->cend()) {
         return false;
@@ -588,69 +626,213 @@ Status MonomialExpression::EliminateEtaPartial() {
       }
     });
   if (it_eta == index_mapping->cend() || it_partial == index_mapping->cend()) {
+    // nothing found, returning
     return NO_ACTION;
   } else {
+    // We found a contracted pair of partial and eta!
+    // Now we define a new index mapping and fill it with the contents of our old mapping,
+    // except that we neglect our eta and replace our partial.
     auto new_mapping = std::make_unique<IndexMapping>();
     for (auto it = index_mapping->cbegin(); it < index_mapping->cend(); ++it) {
       if (it == it_eta) {
         continue;
       } else if (it == it_partial) {
-        std::vector<Index> indices_partial = it->first->get_vector();
-        indices_partial.erase(std::remove_if(indices_partial.begin(), indices_partial.end(),
-          [&overlap](auto const & a) {
-            if (std::find(overlap.cbegin(), overlap.cend(), a) == overlap.cend()) {
-              return false;
-            } else {
-              return true;
-            }
-          }), indices_partial.end());
-        new_mapping->push_back(std::make_pair(std::make_unique<Indices>(indices_partial), std::make_unique<Tensor>(*(it->second))));
-        new_mapping->push_back(std::make_pair(std::make_unique<Indices>(), std::make_unique<Tensor>(0, "partialBox")));
-        continue;
+        if (overlap.size() == 1) {
+          std::vector<Index> indices_partial = it->first->get_vector();
+          std::vector<Index> indices_eta = it_eta->first->get_vector();
+          Index new_index;
+          if (overlap.at(0) == indices_eta.at(0)) {
+            new_index = indices_eta.at(1);
+          } else if (overlap.at(0) == indices_eta.at(1)) {
+            new_index = indices_eta.at(0);
+          } else {
+            assert(false);
+          }
+          std::replace(indices_partial.begin(), indices_partial.end(), overlap.at(0), new_index);
+          new_mapping->push_back(std::make_pair(std::make_unique<Indices>(indices_partial), std::make_unique<Tensor>(*(it->second))));
+        } else if (overlap.size() == 2) {
+          std::vector<Index> indices_partial = it->first->get_vector();
+          indices_partial.erase(std::remove_if(indices_partial.begin(), indices_partial.end(),
+            [&overlap](auto const & a) {
+              if (std::find(overlap.cbegin(), overlap.cend(), a) == overlap.cend()) {
+                return false;
+              } else {
+                return true;
+              }
+            }), indices_partial.end());
+          Tensor new_partial (it->second->get_rank() - 1, "partial");
+          if (new_partial.get_rank() > 1) {
+            new_partial.SetSymmetric();
+          }
+          new_mapping->push_back(std::make_pair(std::make_unique<Indices>(indices_partial), std::make_unique<Tensor>(new_partial)));
+          new_mapping->push_back(std::make_pair(std::make_unique<Indices>(), std::make_unique<Tensor>(0, "partialBox")));
+        } else {
+          assert(false);
+        }
       } else {
         new_mapping->push_back(std::make_pair(std::make_unique<Indices>(*(it->first)), std::make_unique<Tensor>(*(it->second))));
       }
     }
     std::swap(index_mapping, new_mapping);
-    return ETA_PARTIAL_TO_BOX;
+    return ETA_PARTIAL_CONTRACTION;
+  }
+}
+
+Status MonomialExpression::EliminateEtaRankOne() {
+  Index overlap;
+  auto it_eta = index_mapping->cend();
+  // looking for rank one tensor which is contracted with an eta
+  auto it_tensor = std::find_if(index_mapping->cbegin(), index_mapping->cend(),
+    [this,&it_eta,&overlap](auto & a) {
+      if (a.first->size() != 1) {
+        return false;
+      }
+  // looking an eta which is contracted with our tensor 
+      it_eta = std::find_if(index_mapping->cbegin(), index_mapping->cend(),
+        [&a,&overlap,&it_eta](auto & b) {
+          if (b.second->get_name() != "eta" || b.first->size() != 2) {
+            return false;
+          }
+          auto overlap_vec = a.first->Overlap(*b.first).get_vector();
+          if (overlap_vec.size() == 1) {
+            overlap = overlap_vec.at(0);
+            return true;
+          } else {
+            return false;
+          }
+      });
+      if (it_eta == index_mapping->cend()) {
+        return false;
+      } else {
+        return true;
+      }
+    });
+  if (it_eta == index_mapping->cend() || it_tensor == index_mapping->cend()) {
+    // nothing found, returning
+    return NO_ACTION;
+  } else {
+    // We found a contracted pair of tensor and eta!
+    // Now we define a new index mapping and fill it with the contents of our old mapping,
+    // except that we neglect our eta and replace our tensor.
+    auto new_mapping = std::make_unique<IndexMapping>();
+    for (auto it = index_mapping->cbegin(); it < index_mapping->cend(); ++it) {
+      if (it == it_eta) {
+        continue;
+      } else if (it == it_tensor) {
+        std::vector<Index> indices_eta = it_eta->first->get_vector();
+        Index new_index;
+        if (overlap == indices_eta.at(0)) {
+          new_index = indices_eta.at(1);
+        } else if (overlap == indices_eta.at(1)) {
+          new_index = indices_eta.at(0);
+        } else {
+          assert(false);
+        }
+        new_mapping->push_back(std::make_pair(std::make_unique<Indices>(Indices({new_index})), std::make_unique<Tensor>(*(it->second))));
+      } else {
+        new_mapping->push_back(std::make_pair(std::make_unique<Indices>(*(it->first)), std::make_unique<Tensor>(*(it->second))));
+      }
+    }
+    std::swap(index_mapping, new_mapping);
+    return ETA_CONTRACTION;
   }
 }
 
 Status MonomialExpression::EliminateEpsilon() {
-  Tensor * epsilon = nullptr;
-  Indices epsilon_indices;
+  auto it_epsilon = std::find_if(index_mapping->cbegin(), index_mapping->cend(),
+    [this](auto & a) {
+      if (!(a.second->get_name() == "epsilon" || a.second->get_name() == "epsilonI") || a.second->get_rank() != 4 || !a.second->IsAntisymmetric()) {
+        return false;
+      }
+      Indices epsilon_indices = *a.first;
+      epsilon_indices.SortAndMakeUnique();
+      if (epsilon_indices.size() < 4) {
+        return true;
+      }
+      auto it_other = std::find_if(index_mapping->cbegin(), index_mapping->cend(),
+        [&a](auto & b) {
+          if (b.second->IsSymmetric()) {
+            Indices overlap = b.first->Overlap(*a.first);
+            if (overlap.size() > 1) {
+              return true;
+            } else {
+              return false;
+            }
+          } else {
+            return false;
+          }
+        });
+      if (it_other == index_mapping->cend()) {
+        return false;
+      } else {
+        return true;
+      }
+    });
 
-  for (auto const & a : *index_mapping) {
-    if (a.second->get_name() == "epsilon" && a.second->get_rank() == 4) {
-      epsilon = a.second.get();
-      epsilon_indices = *a.first;
-      break;
-    }
-  }
+  return (it_epsilon == index_mapping->cend() ? NO_ACTION : EPSILON_TO_ZERO);
+}
 
-  if (epsilon == nullptr) {
+Status MonomialExpression::EliminateEpsilonI() {
+  auto it_epsilonI = std::find_if(index_mapping->cbegin(), index_mapping->cend(),
+    [](auto const & a) {
+      return ((a.second->get_name() == "epsilonI") && (a.second->IsAntisymmetric()) && (a.first->size() == 4));
+    });
+
+  if (it_epsilonI == index_mapping->cend()) {
     return NO_ACTION;
   } else {
-    epsilon_indices.SortAndMakeUnique();
-    if (epsilon_indices.size() < 4) {
-      return EPSILON_TO_ZERO;
-    }
+    std::vector<Index> unused_indices = GetUnusedIndices();
+    Tensor eta (2, "eta");
+    eta.SetSymmetric();
 
-    for (auto const & a : *index_mapping) {
-      if (epsilon == a.second.get()) {
-        continue;
-      }
-      if (a.second->IsSymmetric()) {
-        Indices overlap = epsilon_indices.Overlap(*a.first);
-        if (overlap.size() > 1) {
-          return EPSILON_TO_ZERO;
+    Tensor epsilon (4, "epsilon");
+    epsilon.SetAntisymmetric();
+
+    auto new_mapping = std::make_unique<IndexMapping>();
+    std::for_each(index_mapping->cbegin(), index_mapping->cend(),
+      [&new_mapping,&it_epsilonI,unused_indices,eta,epsilon] (auto const & a){
+        if ( a != *it_epsilonI ) {
+          new_mapping->push_back(std::make_pair(std::make_unique<Indices>(*a.first), std::make_unique<Tensor>(*a.second)));
+        } else {
+          new_mapping->push_back(std::make_pair(std::make_unique<Indices>( Indices({ unused_indices.at(0), unused_indices.at(1), unused_indices.at(2), unused_indices.at(3) })),
+                                                std::make_unique<Tensor>(epsilon)));
+          new_mapping->push_back(std::make_pair(std::make_unique<Indices>( Indices({ unused_indices.at(0), it_epsilonI->first->at(0) }) ), std::make_unique<Tensor>(eta)));
+          new_mapping->push_back(std::make_pair(std::make_unique<Indices>( Indices({ unused_indices.at(1), it_epsilonI->first->at(1) }) ), std::make_unique<Tensor>(eta)));
+          new_mapping->push_back(std::make_pair(std::make_unique<Indices>( Indices({ unused_indices.at(2), it_epsilonI->first->at(2) }) ), std::make_unique<Tensor>(eta)));
+          new_mapping->push_back(std::make_pair(std::make_unique<Indices>( Indices({ unused_indices.at(3), it_epsilonI->first->at(3) }) ), std::make_unique<Tensor>(eta)));
         }
-      }
-    }
-
-    return NO_ACTION;
+      });
+    std::swap(index_mapping, new_mapping);
+    return EPSILONI;
   }
+}
+
+std::pair<Indices, Indices> MonomialExpression::EliminateEpsilonEpsilonI() {
+  auto it_epsilon = std::find_if(index_mapping->cbegin(), index_mapping->cend(),
+    [](auto const & a) {
+      return (a.second->get_name() == "epsilon" && a.second->IsAntisymmetric() && a.first->size() == 4);
+    });
   
+  auto it_epsilonI = std::find_if(index_mapping->cbegin(), index_mapping->cend(),
+    [](auto const & a) {
+      return (a.second->get_name() == "epsilonI" && a.second->IsAntisymmetric() && a.first->size() == 4);
+    });
+  
+  if (it_epsilon == index_mapping->cend() || it_epsilonI == index_mapping->cend()) {
+    return std::make_pair(Indices { }, Indices { });
+  } else {
+    auto epsilon = std::make_pair(std::make_unique<Indices>(*(it_epsilon->first)), std::make_unique<Tensor>(*(it_epsilon->second)));
+    auto epsilonI = std::make_pair(std::make_unique<Indices>(*(it_epsilonI->first)), std::make_unique<Tensor>(*(it_epsilonI->second)));
+
+    index_mapping->erase(
+      std::remove_if(index_mapping->begin(), index_mapping->end(),
+        [&epsilon,&epsilonI] (auto const & a) {
+          return (epsilon == a || epsilonI == a);
+        }
+      ), index_mapping->end());
+
+    return std::make_pair(*(epsilon.first), *(epsilonI.first));
+  }
 }
 
 Status MonomialExpression::EliminateEtaEta() {

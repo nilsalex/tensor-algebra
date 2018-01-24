@@ -68,8 +68,12 @@ int main () {
       Indices indices_delta   {'e', 'g', 'f', 'p', 'q', 'h'};
       Indices indices_delta2  {'e', 'g', 'h', 'p', 'q', 'f'};
 
+      Indices indices_delta_epsilon {'e', 'f', 'g', 'm', 'p', 'q', 'h', 'm'};
+
       Tensor eta (2, "eta");
       eta.SetSymmetric();
+      Tensor epsilon (4, "epsilonI");
+      epsilon.SetAntisymmetric();
       Tensor partial (3, "partial");
       partial.SetSymmetric();
       Tensor xi      (1, "xi");
@@ -80,11 +84,19 @@ int main () {
       delta_tm.AddFactorRight(xi);
     
       MonomialExpression delta_me(delta_tm, indices_delta);
+
+      TensorMonomial delta_tm_epsilon;
+      delta_tm_epsilon.AddFactorRight(epsilon);
+      delta_tm_epsilon.AddFactorRight(partial);
+      delta_tm_epsilon.AddFactorRight(xi);
+
+      MonomialExpression delta_me_epsilon(delta_tm_epsilon, indices_delta_epsilon);
     
       Expression delta;
       delta.AddSummand(delta_me);
-    
       delta.ExchangeSymmetrise(indices_delta, indices_delta2, false);
+
+//      delta.AddSummand(delta_me_epsilon, Rational(-1, 2));
   
       final_expr_kinetic = simplified.ApplyGaugeSymmetry(delta);
   }
@@ -138,8 +150,12 @@ int main () {
       Indices indices_delta   {'e', 'g', 'f', 'h'};
       Indices indices_delta2  {'e', 'g', 'h', 'f'};
 
+      Indices indices_delta_epsilon {'e', 'f', 'g', 'm', 'h', 'm'};
+
       Tensor eta (2, "eta");
       eta.SetSymmetric();
+      Tensor epsilon (4, "epsilonI");
+      epsilon.SetAntisymmetric();
       Tensor partial (1, "partial");
       Tensor xi      (1, "xi");
     
@@ -147,13 +163,21 @@ int main () {
       delta_tm.AddFactorRight(eta);
       delta_tm.AddFactorRight(partial);
       delta_tm.AddFactorRight(xi);
+
+      TensorMonomial delta_tm_epsilon;
+      delta_tm_epsilon.AddFactorRight(epsilon);
+      delta_tm_epsilon.AddFactorRight(partial);
+      delta_tm_epsilon.AddFactorRight(xi);
     
       MonomialExpression delta_me(delta_tm, indices_delta);
+      MonomialExpression delta_me_epsilon(delta_tm_epsilon, indices_delta_epsilon);
     
       Expression delta;
       delta.AddSummand(delta_me);
     
       delta.ExchangeSymmetrise(indices_delta, indices_delta2, false);
+
+//      delta.AddSummand(delta_me_epsilon, Rational(-1, 2));
   
       final_expr_mass = simplified.ApplyGaugeSymmetry(delta);
   }
