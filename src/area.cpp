@@ -93,11 +93,9 @@ int main () {
       MonomialExpression delta_me_epsilon(delta_tm_epsilon, indices_delta_epsilon);
     
       Expression delta;
-      delta.AddSummand(delta_me);
+      delta.AddSummand(delta_me, Rational(8, 1));
       delta.ExchangeSymmetrise(indices_delta, indices_delta2, false);
 
-//      delta.AddSummand(delta_me_epsilon, Rational(-1, 2));
-  
       final_expr_kinetic = simplified.ApplyGaugeSymmetry(delta);
   }
   {
@@ -173,12 +171,10 @@ int main () {
       MonomialExpression delta_me_epsilon(delta_tm_epsilon, indices_delta_epsilon);
     
       Expression delta;
-      delta.AddSummand(delta_me);
+      delta.AddSummand(delta_me, Rational(8, 1));
     
       delta.ExchangeSymmetrise(indices_delta, indices_delta2, false);
 
-//      delta.AddSummand(delta_me_epsilon, Rational(-1, 2));
-  
       final_expr_mass = simplified.ApplyGaugeSymmetry(delta);
   }
 

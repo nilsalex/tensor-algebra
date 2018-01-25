@@ -227,7 +227,7 @@ void Expression::EliminateEpsilonEpsilonI() {
       [&repeat,&summands_new](auto const & a) {
         auto indices_pair = a.first->EliminateEpsilonEpsilonI();   
 
-        if ( indices_pair.first.size() == 0 && indices_pair.second.size() == 0 ) {
+        if ( indices_pair.first.size() == 0 && indices_pair.second.size() == 0 && !a.first->IsZero()) {
           summands_new->push_back(std::make_pair(std::make_unique<MonomialExpression>(*a.first), std::make_unique<ScalarSum>(*a.second)));
         } else if ( indices_pair.first.size() == 4 && indices_pair.second.size() == 4 ) {
           Tensor delta (2, "delta");

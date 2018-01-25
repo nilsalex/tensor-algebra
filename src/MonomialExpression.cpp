@@ -726,6 +726,7 @@ Status MonomialExpression::EliminateEtaRankOne() {
         } else if (overlap == indices_eta.at(1)) {
           new_index = indices_eta.at(0);
         } else {
+          new_index = Index::z;
           assert(false);
         }
         new_mapping->push_back(std::make_pair(std::make_unique<Indices>(Indices({new_index})), std::make_unique<Tensor>(*(it->second))));

@@ -224,19 +224,39 @@ TEST(Expression, EliminateEpsilonEpsilonI) {
   tm.AddFactorRight(epsilonI);
   tm.AddFactorRight(xi);
 
-  Indices indices { 'a', 'b', 'c', 'd', 'p', 'q', 'r', 's', 'x' };
+  TensorMonomial tm2;
+  tm2.AddFactorRight(epsilon);
+  tm2.AddFactorRight(epsilonI);
 
-  MonomialExpression me (tm, indices);
+  Indices indices  { 'a', 'b', 'c', 'd', 'p', 'q', 'r', 's', 'x' };
+  Indices indices2 { 'a', 'b', 'c', 'd', 'a', 'b', 'r', 's' };
+
+  MonomialExpression me  (tm,  indices);
+  MonomialExpression me2 (tm2, indices2);
 
   Expression expr;
-
   expr.AddSummand(me);
 
+  Expression expr2;
+  expr2.AddSummand(me2);
+
   EXPECT_EQ("1 epsilon^{ a b c d } epsilonI^{ p q r s } xi^{ x }", expr.GetLatexString());
+  EXPECT_EQ("1 epsilon^{ a b c d } epsilonI^{ a b r s }", expr2.GetLatexString());
 
   expr.EliminateEpsilonEpsilonI();
+  expr2.EliminateEpsilonEpsilonI();
 
   EXPECT_EQ("- 1 delta^{ a p } delta^{ b q } delta^{ c r } delta^{ d s }\n+ 1 delta^{ a p } delta^{ b q } delta^{ c s } delta^{ d r }\n+ 1 delta^{ a p } delta^{ b r } delta^{ c q } delta^{ d s }\n- 1 delta^{ a p } delta^{ b r } delta^{ c s } delta^{ d q }\n- 1 delta^{ a p } delta^{ b s } delta^{ c q } delta^{ d r }\n+ 1 delta^{ a p } delta^{ b s } delta^{ c r } delta^{ d q }\n+ 1 delta^{ a q } delta^{ b p } delta^{ c r } delta^{ d s }\n- 1 delta^{ a q } delta^{ b p } delta^{ c s } delta^{ d r }\n- 1 delta^{ a q } delta^{ b r } delta^{ c p } delta^{ d s }\n+ 1 delta^{ a q } delta^{ b r } delta^{ c s } delta^{ d p }\n+ 1 delta^{ a q } delta^{ b s } delta^{ c p } delta^{ d r }\n- 1 delta^{ a q } delta^{ b s } delta^{ c r } delta^{ d p }\n- 1 delta^{ a r } delta^{ b p } delta^{ c q } delta^{ d s }\n+ 1 delta^{ a r } delta^{ b p } delta^{ c s } delta^{ d q }\n+ 1 delta^{ a r } delta^{ b q } delta^{ c p } delta^{ d s }\n- 1 delta^{ a r } delta^{ b q } delta^{ c s } delta^{ d p }\n- 1 delta^{ a r } delta^{ b s } delta^{ c p } delta^{ d q }\n+ 1 delta^{ a r } delta^{ b s } delta^{ c q } delta^{ d p }\n+ 1 delta^{ a s } delta^{ b p } delta^{ c q } delta^{ d r }\n- 1 delta^{ a s } delta^{ b p } delta^{ c r } delta^{ d q }\n- 1 delta^{ a s } delta^{ b q } delta^{ c p } delta^{ d r }\n+ 1 delta^{ a s } delta^{ b q } delta^{ c r } delta^{ d p }\n+ 1 delta^{ a s } delta^{ b r } delta^{ c p } delta^{ d q }\n- 1 delta^{ a s } delta^{ b r } delta^{ c q } delta^{ d p }", expr.GetLatexString());
+
+  EXPECT_EQ("- 1 delta^{ a a } delta^{ b b } delta^{ c r } delta^{ d s }\n+ 1 delta^{ a a } delta^{ b b } delta^{ c s } delta^{ d r }\n+ 1 delta^{ a a } delta^{ b r } delta^{ c b } delta^{ d s }\n- 1 delta^{ a a } delta^{ b r } delta^{ c s } delta^{ d b }\n- 1 delta^{ a a } delta^{ b s } delta^{ c b } delta^{ d r }\n+ 1 delta^{ a a } delta^{ b s } delta^{ c r } delta^{ d b }\n+ 1 delta^{ a b } delta^{ b a } delta^{ c r } delta^{ d s }\n- 1 delta^{ a b } delta^{ b a } delta^{ c s } delta^{ d r }\n- 1 delta^{ a b } delta^{ b r } delta^{ c a } delta^{ d s }\n+ 1 delta^{ a b } delta^{ b r } delta^{ c s } delta^{ d a }\n+ 1 delta^{ a b } delta^{ b s } delta^{ c a } delta^{ d r }\n- 1 delta^{ a b } delta^{ b s } delta^{ c r } delta^{ d a }\n- 1 delta^{ a r } delta^{ b a } delta^{ c b } delta^{ d s }\n+ 1 delta^{ a r } delta^{ b a } delta^{ c s } delta^{ d b }\n+ 1 delta^{ a r } delta^{ b b } delta^{ c a } delta^{ d s }\n- 1 delta^{ a r } delta^{ b b } delta^{ c s } delta^{ d a }\n- 1 delta^{ a r } delta^{ b s } delta^{ c a } delta^{ d b }\n+ 1 delta^{ a r } delta^{ b s } delta^{ c b } delta^{ d a }\n+ 1 delta^{ a s } delta^{ b a } delta^{ c b } delta^{ d r }\n- 1 delta^{ a s } delta^{ b a } delta^{ c r } delta^{ d b }\n- 1 delta^{ a s } delta^{ b b } delta^{ c a } delta^{ d r }\n+ 1 delta^{ a s } delta^{ b b } delta^{ c r } delta^{ d a }\n+ 1 delta^{ a s } delta^{ b r } delta^{ c a } delta^{ d b }\n- 1 delta^{ a s } delta^{ b r } delta^{ c b } delta^{ d a }", expr2.GetLatexString());
+
+  expr2.EliminateDelta();
+  expr2.ApplyMonomialSymmetries();
+  expr2.SortMonomials();
+  expr2.SortSummands();
+  expr2.CollectPrefactors();
+
+  EXPECT_EQ("- 2 delta^{ c r } delta^{ d s }\n+ 2 delta^{ c s } delta^{ d r }", expr2.GetLatexString());
 }
 
 TEST(Expression, EliminateDelta) {
