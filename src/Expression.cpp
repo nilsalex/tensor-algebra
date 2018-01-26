@@ -221,12 +221,21 @@ void Expression::EliminateEpsilonEpsilonI() {
   bool repeat = true;
 
   while (repeat) {
+    // new vector of summands
     auto summands_new = std::make_unique<Sum>();
+    // don't repeat unless there has been some action
     repeat = false;
     std::for_each(summands->begin(), summands->end(),
       [&repeat,&summands_new](auto const & a) {
+        // eliminate epsilon and epsilonI in summand
+        // return indices of epsilon and epsilonI
         auto indices_pair = a.first->EliminateEpsilonEpsilonI();   
 
+        // if there was no action (returned indices are of size zero),
+        // push back old summand to new vector of summands
+        //
+        // else, for every permutation, push back the four deltas and
+        // then what remains from the original summand (if there is any tensor left)
         if ( indices_pair.first.size() == 0 && indices_pair.second.size() == 0 && !a.first->IsZero()) {
           summands_new->push_back(std::make_pair(std::make_unique<MonomialExpression>(*a.first), std::make_unique<ScalarSum>(*a.second)));
         } else if ( indices_pair.first.size() == 4 && indices_pair.second.size() == 4 ) {
@@ -255,7 +264,9 @@ void Expression::EliminateEpsilonEpsilonI() {
                                           indices_pair.first.at(3), indices_pair.second.at(index_numbers.at(3)) };
             
             MonomialExpression four_deltas_me (four_deltas, four_deltas_indices);
-            summands_new->push_back(std::make_pair(std::make_unique<MonomialExpression>(four_deltas_me), std::make_unique<ScalarSum>(coeff)));
+            MonomialExpression new_summand = four_deltas_me.MultiplyOther(*a.first);
+
+            summands_new->push_back(std::make_pair(std::make_unique<MonomialExpression>(new_summand), std::make_unique<ScalarSum>(coeff)));
           } while (std::next_permutation(index_numbers.begin(), index_numbers.end()));
 
 

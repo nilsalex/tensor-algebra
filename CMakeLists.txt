@@ -41,7 +41,7 @@ add_library(tensor-algebra SHARED src/Indices.cpp src/Rational.cpp src/Tensor.cp
 add_executable(area src/area.cpp)
 add_executable(area_epsilon src/area_epsilon.cpp)
 add_executable(metric src/metric.cpp)
-add_executable(test_all src/test/RationalTest.cpp src/test/ScalarTest.cpp src/test/ScalarSumTest.cpp src/test/IndicesTest.cpp src/test/TensorTest.cpp src/test/TensorMonomialTest.cpp src/test/MonomialExpressionTest.cpp src/test/ExpressionTest.cpp)
+add_executable(test_all src/test/RationalTest.cpp src/test/ScalarTest.cpp src/test/ScalarSumTest.cpp src/test/IndicesTest.cpp src/test/TensorTest.cpp src/test/TensorMonomialTest.cpp src/test/MonomialExpressionTest.cpp src/test/ExpressionTest.cpp src/test/CalculationsTest.cpp)
 add_test(NAME test_all COMMAND test_all)
 target_link_libraries(test_all gtest_main tensor-algebra ${GMP_LIBRARY} ${Boost_LIBRARIES})
 target_link_libraries(area tensor-algebra ${GMP_LIBRARY} ${Boost_LIBRARIES})

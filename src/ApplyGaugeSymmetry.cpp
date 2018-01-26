@@ -15,8 +15,8 @@ static std::ostream& operator<<(std::ostream & stream, mpq_class const & rop) {
 
 Expression Expression::ApplyGaugeSymmetry(Expression const & delta) const {
   Expression gauge_term = this->MultiplyOther(delta);
-
   gauge_term.SortMonomials();
+
   gauge_term.EliminateEpsilonEpsilonI();
   gauge_term.EliminateEpsilonI();
 
