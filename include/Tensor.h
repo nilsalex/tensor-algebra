@@ -11,8 +11,9 @@
 
 class Tensor {
  private:
-  bool symmetric = false;
-  bool antisymmetric = false;
+  bool symmetric;
+  bool antisymmetric;
+  int sort_index;
 
   friend class boost::serialization::access;
   template <typename Archive>
@@ -27,7 +28,7 @@ class Tensor {
 
   Tensor (Tensor const & other);
 
-  Tensor (int rank_set, std::string name_set = "");
+  Tensor (int rank_set, std::string const & name_set = "", int sort_index_set = 0);
 
   std::string get_name () const;
   size_t get_rank() const;

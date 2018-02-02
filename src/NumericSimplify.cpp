@@ -16,7 +16,7 @@
 #include "Expression.h"
 
 //int THREADS_NUM = std::thread::hardware_concurrency();
-constexpr int THREADS_NUM = 32;
+constexpr int THREADS_NUM = 4;
 
 typedef Eigen::Matrix<mpq_class, Eigen::Dynamic, Eigen::Dynamic> MatrixXq;
 

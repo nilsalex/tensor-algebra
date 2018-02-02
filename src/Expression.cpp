@@ -15,15 +15,16 @@ void Expression::serialize(Archive & ar, unsigned int const version) {
   if (version > 0) {
   } else {
   }
+  ar & dimension;
   ar & summands;
 }
 
 template void Expression::serialize<boost::archive::text_oarchive>(boost::archive::text_oarchive&, unsigned int const);
 template void Expression::serialize<boost::archive::text_iarchive>(boost::archive::text_iarchive&, unsigned int const);
 
-Expression::Expression() : summands(std::make_unique<std::vector<Summand>>()) { }
+Expression::Expression() : dimension(4), summands(std::make_unique<std::vector<Summand>>()) { }
 
-Expression::Expression(Expression const & other) : summands(std::make_unique<Sum>()) {
+Expression::Expression(Expression const & other) : dimension(other.dimension), summands(std::make_unique<Sum>()) {
   std::for_each(other.summands->cbegin(), other.summands->cend(), [this](auto const & it) {
     summands->push_back(std::pair<std::unique_ptr<MonomialExpression>, std::unique_ptr<ScalarSum>>());
     auto monexp_new = std::make_unique<MonomialExpression>(*(it.first));
@@ -134,6 +135,31 @@ void Expression::CanonicalisePrefactors() {
   std::for_each(summands->begin(), summands->end(), [](auto & a) { a.second->Sort(); a.second->Collect(); });
 
   EliminateZeros();
+}
+
+void Expression::EliminateGamma() {
+  bool repeat = true;
+
+  while (repeat) {
+    auto summands_new = std::make_unique<Sum>();
+    repeat = false;
+    std::transform(summands->cbegin(), summands->cend(), std::back_inserter(*summands_new),
+      [&repeat](auto const & a) {
+        auto summand_new = std::make_pair(std::make_unique<MonomialExpression>(*a.first), std::make_unique<ScalarSum>(*a.second));;
+        Status ret = summand_new.first->EliminateGamma();
+        if (ret == DELTA_OK ) {
+          repeat = true;
+        } else if (ret == DELTA_TO_TRACE) {
+          summand_new.second->MultiplyCoefficient(Rational(3, 1));
+          repeat = true;
+        } else if (ret == ERROR) {
+          assert(false);
+        }
+        return summand_new;
+      });
+    std::swap(summands, summands_new);
+  }
+
 }
 
 void Expression::EliminateDelta() {
@@ -278,6 +304,26 @@ void Expression::EliminateEpsilonEpsilonI() {
   }
 }
 
+void Expression::EliminateGammaGamma() {
+  bool repeat = true;
+
+  while (repeat) {
+    repeat = false;
+    std::for_each(summands->begin(), summands->end(),
+      [&repeat](auto & a) {
+        Status ret = a.first->EliminateGammaGamma();
+        if (ret == GAMMA_GAMMA_TO_TRACE) {
+          a.second->MultiplyCoefficient(Rational(3, 1));
+          repeat = true;
+        } else if (ret == GAMMA_GAMMA_TO_DELTA) {
+          repeat = true;
+        } else if (ret == ERROR) {
+          assert(false);
+        }
+      });
+  }
+}
+
 void Expression::EliminateEtaEta() {
   bool repeat = true;
 
@@ -346,6 +392,13 @@ void Expression::EliminateZeros() {
   std::swap(summands, summands_new);
 }
 
+void Expression::SubstituteIndices(Indices const & indices_old, Indices const & indices_new) {
+  std::for_each(summands->begin(), summands->end(),
+    [&indices_old,&indices_new] (auto & a) {
+      a.first->ExchangeIndices(indices_old,indices_new);
+    });
+}
+
 void Expression::SubstituteVariable(size_t const variable_old, ScalarSum const & scalar_sum_new) {
   std::for_each(summands->begin(), summands->end(),
     [variable_old,scalar_sum_new](auto & a) {
@@ -401,6 +454,28 @@ void Expression::SortSummandsByPrefactors() {
       return false;
     }
   });
+}
+
+void Expression::ThreePlusOne(std::vector<Index> indices_to_zero) {
+  auto summands_new = std::make_unique<Sum>();
+
+  std::for_each(summands->begin(), summands->end(),
+    [&indices_to_zero,&summands_new] (auto & a) { 
+      auto status = a.first->ThreePlusOne(indices_to_zero);
+      if (status == ZERO_ZERO) {
+        return;
+      } else if (status == ZERO_POSITIVE) {
+        summands_new->emplace_back(std::make_unique<MonomialExpression>(*a.first), std::make_unique<ScalarSum>(*a.second));
+      } else if (status == ZERO_NEGATIVE) {
+        summands_new->emplace_back(std::make_unique<MonomialExpression>(*a.first), std::make_unique<ScalarSum>(*a.second));
+        summands_new->back().second->Negate();
+      } else {
+        assert(false);
+      }
+    });
+
+  dimension = 3;
+  std::swap(summands_new, summands);
 }
 
 bool Expression::ContainsMonomial (MonomialExpression const & monexpr) const {

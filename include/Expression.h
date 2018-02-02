@@ -22,6 +22,7 @@ bool operator< (Summand const & lop, Summand const & rop);
 
 class Expression {
  private:
+  unsigned int dimension;
   std::unique_ptr<Sum> summands;
 
   friend class boost::serialization::access;
@@ -45,12 +46,15 @@ class Expression {
   void CanonicalisePrefactors();
   void CollectPrefactors();
   void EliminateVariable(size_t const variable);
+  void SubstituteIndices(Indices const & indices_old, Indices const & indices_new);
   void SubstituteVariable(size_t const variable_old, ScalarSum const & scalar_sum_new);
   void SubstituteVariables(std::map<size_t, ScalarSum> substitution_map);
   void EliminateDelta();
   void EliminateEpsilon();
   void EliminateEpsilonEpsilonI();
   void EliminateEpsilonI();
+  void EliminateGamma();
+  void EliminateGammaGamma();
   void EliminateEtaEta();
   void EliminateEtaPartial();
   void EliminateEtaRankOne();
@@ -60,6 +64,8 @@ class Expression {
   void SortMonomials();
   void SortSummands();
   void SortSummandsByPrefactors();
+
+  void ThreePlusOne(std::vector<Index> indices_to_zero);
 
   Expression ApplyGaugeSymmetry (Expression const & delta) const;
 

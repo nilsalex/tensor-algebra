@@ -836,7 +836,15 @@ std::pair<Indices, Indices> MonomialExpression::EliminateEpsilonEpsilonI() {
   }
 }
 
+Status MonomialExpression::EliminateGammaGamma() {
+  return EliminateMetricMetric(3);
+}
+
 Status MonomialExpression::EliminateEtaEta() {
+  return EliminateMetricMetric(4);
+}
+
+Status MonomialExpression::EliminateMetricMetric(unsigned int const dimension) {
   std::pair<Tensor *, Tensor *> to_eliminate = std::make_pair(nullptr, nullptr);
   Indices overlap;
 
@@ -844,7 +852,7 @@ Status MonomialExpression::EliminateEtaEta() {
 
   for (auto it1 = index_mapping->cbegin(); it1 < index_mapping->cend(); ++it1) {
     for (auto it2 = it1 + 1; it2 < index_mapping->cend(); ++it2) {
-      if (it1->second->get_name() == "eta" && it2->second->get_name() == "eta") {
+      if (it1->second->get_name() == ( dimension == 4 ? "eta" : "gamma") && it2->second->get_name() == ( dimension == 4 ? "eta" : "gamma")) {
         Indices _overlap = it1->first->Overlap(*(it2->first));
 
         if (_overlap.size() > 0) {
@@ -868,19 +876,19 @@ Status MonomialExpression::EliminateEtaEta() {
   }
 
   if (overlap.size() == 1) {
-    Tensor delta(2, "delta");
-    delta.SetSymmetric();
+    Tensor new_metric(2, (dimension == 4 ? "delta" : "gamma"));
+    new_metric.SetSymmetric();
 
-    std::vector<Index> indices_delta;
+    std::vector<Index> indices_new;
 
     index_mapping->erase(
       std::remove_if(index_mapping->begin(), index_mapping->end(),
-        [&indices_delta,&overlap,&to_eliminate] (auto const & a) {
+        [&indices_new,&overlap,&to_eliminate] (auto const & a) {
           if (a.second.get() == to_eliminate.first || a.second.get() == to_eliminate.second) {
             if (a.first->at(0) != overlap.at(0)) {
-              indices_delta.push_back(a.first->at(0));
+              indices_new.push_back(a.first->at(0));
             } else if (a.first->at(1) != overlap.at(0)) {
-              indices_delta.push_back(a.first->at(1));
+              indices_new.push_back(a.first->at(1));
             } else {
               assert(false);
             }
@@ -891,11 +899,11 @@ Status MonomialExpression::EliminateEtaEta() {
         }),
       index_mapping->end());
 
-    assert (indices_delta.size() == 2);
+    assert (indices_new.size() == 2);
 
-    this->AddFactorRight(MonomialExpression(delta, Indices({indices_delta.at(0), indices_delta.at(1)})));
+    this->AddFactorRight(MonomialExpression(new_metric, Indices({indices_new.at(0), indices_new.at(1)})));
 
-    return ETA_ETA_TO_DELTA;
+    return (dimension == 4 ? ETA_ETA_TO_DELTA : GAMMA_GAMMA_TO_DELTA);
   }
 
 
@@ -908,87 +916,156 @@ Status MonomialExpression::EliminateEtaEta() {
         }),
       index_mapping->end());
 
-    return ETA_ETA_TO_TRACE;
+    return (dimension == 4 ? ETA_ETA_TO_TRACE : GAMMA_GAMMA_TO_TRACE);
   } 
   assert(false);
   return ERROR;
 }
 
-Status MonomialExpression::EliminateDelta() {
-  Tensor * delta = nullptr;
-  Indices delta_indices;
+Status MonomialExpression::EliminateGamma() {
+  return EliminateDelta("gamma");
+}
 
-  for (auto const & a : *index_mapping) {
-    if (a.second->get_name() == "delta" && a.second->get_rank() == 2) {
-      delta = a.second.get();
-      delta_indices = *a.first;
-      break;
-    }
-  }
+Status MonomialExpression::EliminateDelta(std::string const & delta_name) {
 
-  if (delta == nullptr) {
-    return NO_ACTION;
-  } else if (delta_indices.at(0) == delta_indices.at(1)) {
-    index_mapping->erase(
-      std::remove_if(index_mapping->begin(), index_mapping->end(),
-        [&delta] (auto const & a) {
-          return delta == a.second.get();
-        }),
-      index_mapping->end());
+  for (auto it_delta = index_mapping->begin(); it_delta != index_mapping->end(); ++it_delta) {
 
-    return DELTA_TO_TRACE;
-  } else {
-    auto it = std::find_if(index_mapping->cbegin(), index_mapping->cend(),
-                             [&delta,&delta_indices] (auto const & a) {
-                               Indices overlap = delta_indices.Overlap(*a.first);
-                               return (delta != a.second.get() && overlap.size() > 0);
-                             });
-
-    if (it == index_mapping->end()) {
-      return NO_ACTION;
-    }
-
-    Indices overlap = delta_indices.Overlap(*(it->first));
-
-    if (overlap.size() == 2) {
-      it->first->Replace(overlap.at(1), overlap.at(0));
-
-      index_mapping->erase(
-        std::remove_if(index_mapping->begin(), index_mapping->end(),
-          [&delta] (auto const & a) {
-            return delta == a.second.get();
-          }),
-        index_mapping->end());
-
-      return DELTA_OK;
-    } else if (overlap.size() == 1) {
-      Index to_replace_with;
-      
-      if (delta_indices.at(0) != overlap.at(0)) {
-        to_replace_with = delta_indices.at(0);
-      } else if (delta_indices.at(1) != overlap.at(0)) {
-        to_replace_with = delta_indices.at(1);
-      } else {
-        assert(false);
-        return ERROR;
-      }
-
-      it->first->Replace(overlap.at(0), to_replace_with);
-
-      index_mapping->erase(
-        std::remove_if(index_mapping->begin(), index_mapping->end(),
-          [&delta] (auto const & a) {
-            return delta == a.second.get();
-          }),
-        index_mapping->end());
-
-      return DELTA_OK;
+    if (!(it_delta->second->get_name() == delta_name && it_delta->second->get_rank() == 2)) {
+      continue;
+    } else if (it_delta->first->at(0) == it_delta->first->at(1)) {
+      index_mapping->erase(std::remove(index_mapping->begin(), index_mapping->end(), *it_delta), index_mapping->end());
+      return DELTA_TO_TRACE;
     } else {
-      assert(false);
-      return ERROR;
+      Indices overlap;
+      auto it_other = std::find_if(index_mapping->cbegin(), index_mapping->cend(),
+        [&it_delta,&overlap] (auto const & a) {
+          if (&a == &(*it_delta)) {
+            return false;
+          } else {
+            overlap = a.first->Overlap(*(it_delta->first));
+            return (overlap.size() > 0);
+          }
+        });
+  
+      if (it_other == index_mapping->cend()) {
+        continue;
+      } else {
+        if (overlap.size() == 2) {
+          it_other->first->Replace(overlap.at(1), overlap.at(0));
+        } else {
+          if (overlap.at(0) == it_delta->first->at(0)) {
+            it_other->first->Replace(overlap.at(0), it_delta->first->at(1));
+          } else {
+            it_other->first->Replace(overlap.at(0), it_delta->first->at(0));
+          }
+        }
+        index_mapping->erase(std::remove(index_mapping->begin(), index_mapping->end(), *it_delta), index_mapping->end());
+        return DELTA_OK;
+      }
     }
   }
 
+  return NO_ACTION;
+
+}
+
+Status MonomialExpression::ThreePlusOne(std::vector<Index> indices_to_zero) {
+  Indices _indices_to_zero(indices_to_zero);
+  int factor = 1;
+
+  index_mapping->erase(std::remove_if(index_mapping->begin(), index_mapping->end(),
+    [&_indices_to_zero,&indices_to_zero,&factor](auto & a) {
+      if (a.second->get_name() == "eta" && a.second->IsSymmetric() && a.first->size() == 2) {
+        Indices overlap = _indices_to_zero.Overlap(*a.first);
+        if (overlap.size() == 1) {
+          factor *= 0;
+          return false;
+        } else if (overlap.size() == 0) {
+          auto gamma = std::make_unique<Tensor>(2, "gamma");
+          gamma->SetSymmetric();
+          std::swap(a.second, gamma);
+          factor *= -1;
+          return false;
+        } else if (overlap.size() == 2) {
+          return true;
+        } else {
+          assert(false);
+          return false;
+        }
+      } else if (a.second->get_name() == "epsilon" && a.second->IsAntisymmetric() && a.first->size() == 4) {
+        Indices overlap = _indices_to_zero.Overlap(*a.first);
+        if (overlap.size() == 0) {
+          factor *= 0;
+          return false;
+        } else if (overlap.size() == 1) {
+          std::vector<Index> epsilon_indices = a.first->get_vector();
+          auto it = std::find(epsilon_indices.cbegin(), epsilon_indices.cend(), overlap.at(0));
+          if (std::distance(it, epsilon_indices.cbegin()) % 2 == 0) {
+            factor *= -1;
+          }
+          auto _new_indices = std::make_unique<std::vector<Index>> ();
+          std::for_each(epsilon_indices.cbegin(), epsilon_indices.cend(),
+            [&_new_indices,&overlap] (auto const & a) {
+              if (a != overlap.at(0)) {
+                _new_indices->push_back(a);
+              }
+            });
+          auto new_indices = std::make_unique<Indices>(*_new_indices);
+          auto new_epsilon = std::make_unique<Tensor>(3,"epsilon");
+          new_epsilon->SetAntisymmetric();
+          std::swap(a.first, new_indices);
+          std::swap(a.second, new_epsilon);
+          return false;
+        } else if (overlap.size() > 1 && overlap.size() < 5) {
+          factor *= 0;
+          return false;
+        } else {
+          assert(false);
+          return false;
+        }
+      } else if (a.second->get_name() == "epsilonI" && a.second->IsAntisymmetric() && a.first->size() == 4) {
+        Indices overlap = _indices_to_zero.Overlap(*a.first);
+        if (overlap.size() == 0) {
+          factor *= 0;
+          return false;
+        } else if (overlap.size() == 1) {
+          std::vector<Index> epsilon_indices = a.first->get_vector();
+          auto it = std::find(epsilon_indices.cbegin(), epsilon_indices.cend(), overlap.at(0));
+          if (std::distance(it, epsilon_indices.cbegin()) % 2 != 0) {
+            factor *= -1;
+          }
+          auto _new_indices = std::make_unique<std::vector<Index>> ();
+          std::for_each(epsilon_indices.cbegin(), epsilon_indices.cend(),
+            [&_new_indices,&overlap] (auto const & a) {
+              if (a != overlap.at(0)) {
+                _new_indices->push_back(a);
+              }
+            });
+          auto new_indices = std::make_unique<Indices>(*_new_indices);
+          auto new_epsilon = std::make_unique<Tensor>(3,"epsilon");
+          new_epsilon->SetAntisymmetric();
+          std::swap(a.first, new_indices);
+          std::swap(a.second, new_epsilon);
+          return false;
+        } else if (overlap.size() > 1 && overlap.size() < 5) {
+          factor *= 0;
+          return false;
+        } else {
+          assert(false);
+          return false;
+        }
+      } else {
+        return false;
+      }
+    }), index_mapping->end());
+
+  if (factor == 0) {
+    return ZERO_ZERO;
+  } else if (factor < 0) {
+    return ZERO_NEGATIVE;
+  } else {
+    return ZERO_POSITIVE;
+  }
 }
 
 MonomialExpression MonomialExpression::MultiplyOther(MonomialExpression const & other) const {

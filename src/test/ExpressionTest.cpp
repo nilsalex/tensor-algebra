@@ -266,15 +266,26 @@ TEST(Expression, EliminateDelta) {
   Tensor T (2, "T");
 
   TensorMonomial tm;
+  TensorMonomial tm2;
 
   tm.AddFactorRight(delta);
   tm.AddFactorRight(T);
 
+  tm2.AddFactorRight(delta);
+  tm2.AddFactorRight(delta);
+  tm2.AddFactorRight(T);
+
   Indices indices  { 'a', 'a', 'x', 'k' };
   Indices indices2 { 'a', 'x', 'x', 'k' };
+  Indices indices3 { 'b', 'f', 'b', 'f' };
+  Indices indices4 { 'a', 'b', 'm', 'n', 'p', 'n' };
+  Indices indices5 { 'a', 'b', 'a', 'b', 'p', 'n' };
 
   MonomialExpression me  (tm, indices );
   MonomialExpression me2 (tm, indices2);
+  MonomialExpression me3 (tm, indices3);
+  MonomialExpression me4 (tm2, indices4);
+  MonomialExpression me5 (tm2, indices5);
 
   Expression expr;
   expr.AddSummand(me);
@@ -282,12 +293,84 @@ TEST(Expression, EliminateDelta) {
   Expression expr2;
   expr2.AddSummand(me2);
 
+  Expression expr3;
+  expr3.AddSummand(me3);
+
+  Expression expr4;
+  expr4.AddSummand(me4);
+
+  Expression expr5;
+  expr5.AddSummand(me5);
+
   EXPECT_EQ("1 delta^{ a a } T^{ x k }", expr.GetLatexString());
   EXPECT_EQ("1 delta^{ a x } T^{ x k }", expr2.GetLatexString());
+  EXPECT_EQ("1 delta^{ b f } T^{ b f }", expr3.GetLatexString());
+  EXPECT_EQ("1 delta^{ a b } delta^{ m n } T^{ p n }", expr4.GetLatexString());
+  EXPECT_EQ("1 delta^{ a b } delta^{ a b } T^{ p n }", expr5.GetLatexString());
 
   expr.EliminateDelta();
   expr2.EliminateDelta();
+  expr3.EliminateDelta();
+  expr4.EliminateDelta();
+  expr5.EliminateDelta();
 
   EXPECT_EQ("4 T^{ x k }", expr.GetLatexString());
   EXPECT_EQ("1 T^{ a k }", expr2.GetLatexString());
+  EXPECT_EQ("1 T^{ b b }", expr3.GetLatexString());
+  EXPECT_EQ("1 delta^{ a b } T^{ p m }", expr4.GetLatexString());
+  EXPECT_EQ("4 T^{ p n }", expr5.GetLatexString());
+}
+
+TEST(Expression, ThreePlusOne) {
+  Tensor eta (2, "eta");
+  eta.SetSymmetric();
+
+  Tensor epsilon (4, "epsilon");
+  epsilon.SetAntisymmetric();
+  Tensor epsilonI (4, "epsilonI");
+  epsilonI.SetAntisymmetric();
+
+  TensorMonomial tm;
+  tm.AddFactorRight(eta);
+  tm.AddFactorRight(eta);
+
+  TensorMonomial tm2;
+  tm2.AddFactorRight(epsilon);
+
+  TensorMonomial tm3;
+  tm3.AddFactorRight(epsilonI);
+
+  Indices indices { 'a', 'b', 'c', 'd' };
+
+  MonomialExpression me (tm, indices);
+  MonomialExpression me2 (tm2, indices);
+  MonomialExpression me3 (tm3, indices);
+
+  Expression expr;
+  expr.AddSummand(me, Rational(4, 3));
+
+  Expression expr2;
+  expr2.AddSummand(me2, Rational(4, 3));
+
+  Expression expr3;
+  expr3.AddSummand(me3, Rational(4, 3));
+
+  Expression expr4;
+  expr4.AddSummand(me2, Rational(4, 3));
+
+  EXPECT_EQ("4/3 eta^{ a b } eta^{ c d }", expr.GetLatexString());
+  EXPECT_EQ("4/3 epsilon^{ a b c d }", expr2.GetLatexString());
+  EXPECT_EQ("4/3 epsilonI^{ a b c d }", expr3.GetLatexString());
+  EXPECT_EQ("4/3 epsilon^{ a b c d }", expr4.GetLatexString());
+
+  expr.ThreePlusOne(std::vector<Index> ({Index::a, Index::b}));
+  expr2.ThreePlusOne(std::vector<Index> ({Index::b}));
+  expr3.ThreePlusOne(std::vector<Index> ({Index::b}));
+  expr4.ThreePlusOne(std::vector<Index> ());
+
+  EXPECT_EQ("- 4/3 gamma^{ c d }", expr.GetLatexString());
+  EXPECT_EQ("4/3 epsilon^{ a c d }", expr2.GetLatexString());
+  EXPECT_EQ("- 4/3 epsilon^{ a c d }", expr3.GetLatexString());
+  EXPECT_EQ("0", expr4.GetLatexString());
+
 }
