@@ -14,7 +14,7 @@
 #include "Rational.h"
 #include "Tensor.h"
 
-enum Status {ERROR, NO_ACTION, ETA_ETA_TO_DELTA, ETA_ETA_TO_TRACE, ETA_CONTRACTION, ETA_PARTIAL_CONTRACTION, DELTA_OK, DELTA_TO_TRACE, EPSILON_TO_ZERO, EPSILON_EPSILONI, EPSILONI, SYM_EVEN, SYM_ODD, ZERO_ZERO, ZERO_POSITIVE, ZERO_NEGATIVE, GAMMA_GAMMA_TO_DELTA, GAMMA_GAMMA_TO_TRACE};
+enum Status {ERROR, NO_ACTION, ETA_ETA_TO_DELTA, ETA_ETA_TO_TRACE, ETA_CONTRACTION, ETA_PARTIAL_CONTRACTION, DELTA_OK, DELTA_TO_TRACE, EPSILON_TO_ZERO, EPSILON_EPSILONI, EPSILONI, SYM_EVEN, SYM_ODD, ZERO_ZERO, ZERO_POSITIVE, ZERO_NEGATIVE, GAMMA_GAMMA_TO_DELTA, GAMMA_GAMMA_TO_TRACE, TRACE_TO_ZERO};
 
 typedef std::pair<std::unique_ptr<Indices>, std::unique_ptr<Tensor>> IndexMappingEntry;
 typedef std::vector<std::pair<std::unique_ptr<Indices>, std::unique_ptr<Tensor>>> IndexMapping;
@@ -55,14 +55,15 @@ class MonomialExpression {
 
   Status EliminateGammaGamma();
   Status EliminateEtaEta();
-  Status EliminateMetricMetric(unsigned int dimension);
+  Status EliminateMetricMetric(unsigned int const dimension);
   Status EliminateEtaPartial();
   Status EliminateEtaRankOne();
-  Status EliminateEpsilon();
+  Status EliminateEpsilon(unsigned int const dimension);
   Status EliminateEpsilonI();
-  std::pair<Indices, Indices> EliminateEpsilonEpsilonI();
+  std::pair<Indices, Indices> EliminateEpsilonEpsilonI(unsigned int const dimension);
   Status EliminateGamma();
   Status EliminateDelta(std::string const & delta_name = "delta");
+  Status EliminateTracefree();
 
   Status ThreePlusOne(std::vector<Index> indices_to_zero);
   

@@ -12,8 +12,8 @@ int main () {
   std::cout << "the Lagrangian of area metric gravity." << std::endl;
   std::cout << std::endl;
 
-  Expression final_expr_kinetic;
-  Expression final_expr_mass;
+  auto final_expr_kinetic = std::make_unique<Expression>();
+  auto final_expr_mass = std::make_unique<Expression>();
 
   {
     std::cout << " #### kinetic term ####" << std::endl;
@@ -23,10 +23,10 @@ int main () {
       load_from_file = f.good();
     }
 
-    Expression simplified;
+    auto simplified = std::make_unique<Expression>();
 
     if (load_from_file) {
-      simplified.LoadFromFile("simplified_area_kinetic.prs");
+      simplified->LoadFromFile("simplified_area_kinetic.prs");
     } else {
       Indices indices  {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'p', 'q'};
 
@@ -51,19 +51,20 @@ int main () {
                                  std::make_pair(indices8, false),
                                  std::make_pair(indices9, false)});
     
-      Expression expr = gtor.Generate();
+      Expression expr ( gtor.Generate() );
     
       std::cout << "Tensor ansatz:" << std::endl;
       std::cout << expr.GetLatexString() << std::endl;
     
       std::cout << "Generating all linear equations by evaluating indices (this may take some time!) ..." << std::endl;
-      simplified = expr.NumericSimplify(indices, true);
+      auto new_expr = std::unique_ptr<Expression>(new Expression(expr.NumericSimplify(indices, true)));
+      std::swap(new_expr, simplified);
   
-      simplified.SaveToFile("simplified_area_kinetic.prs");
+      simplified->SaveToFile("simplified_area_kinetic.prs");
     }
   
       std::cout << "Simplified ansatz without numerical linear dependencies (loaded from savefile):" << std::endl;
-      std::cout << simplified.GetLatexString() << std::endl;
+      std::cout << simplified->GetLatexString() << std::endl;
 
       Indices indices_delta   {'e', 'g', 'f', 'p', 'q', 'h'};
       Indices indices_delta2  {'e', 'g', 'h', 'p', 'q', 'f'};
@@ -96,7 +97,8 @@ int main () {
       delta.AddSummand(delta_me, Rational(8, 1));
       delta.ExchangeSymmetrise(indices_delta, indices_delta2, false);
 
-      final_expr_kinetic = simplified.ApplyGaugeSymmetry(delta);
+      auto new_expr = std::unique_ptr<Expression>(new Expression(simplified->ApplyGaugeSymmetry(delta)));
+      std::swap(new_expr, final_expr_kinetic);
   }
   {
     std::cout << " #### mass term ####" << std::endl;
@@ -106,10 +108,10 @@ int main () {
       load_from_file = f.good();
     }
 
-    Expression simplified;
+    auto simplified = std::make_unique<Expression>();
 
     if (load_from_file) {
-      simplified.LoadFromFile("simplified_area_mass.prs");
+      simplified->LoadFromFile("simplified_area_mass.prs");
     } else {
       Indices indices  {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'};
 
@@ -131,19 +133,21 @@ int main () {
                                  std::make_pair(indices7, false),
                                  std::make_pair(indices8, false)});
     
-      Expression expr = gtor.Generate();
+      Expression expr ( gtor.Generate() );
     
       std::cout << "Tensor ansatz:" << std::endl;
       std::cout << expr.GetLatexString() << std::endl;
     
       std::cout << "Generating all linear equations by evaluating indices (this may take some time!) ..." << std::endl;
-      simplified = expr.NumericSimplify(indices, true);
+
+      auto new_expr = std::unique_ptr<Expression>(new Expression(expr.NumericSimplify(indices, true)));
+      std::swap(new_expr, simplified);
   
-      simplified.SaveToFile("simplified_area_mass.prs");
+      simplified->SaveToFile("simplified_area_mass.prs");
     }
   
       std::cout << "Simplified ansatz without numerical linear dependencies (loaded from savefile):" << std::endl;
-      std::cout << simplified.GetLatexString() << std::endl;
+      std::cout << simplified->GetLatexString() << std::endl;
 
       Indices indices_delta   {'e', 'g', 'f', 'h'};
       Indices indices_delta2  {'e', 'g', 'h', 'f'};
@@ -175,18 +179,22 @@ int main () {
     
       delta.ExchangeSymmetrise(indices_delta, indices_delta2, false);
 
-      final_expr_mass = simplified.ApplyGaugeSymmetry(delta);
+      auto new_expr = std::unique_ptr<Expression>(new Expression(simplified->ApplyGaugeSymmetry(delta)));
+      std::swap(new_expr, final_expr_mass);
   }
 
   std::cout << "#########################################" << std::endl;
   std::cout << "The most general ansatz for the kinetic " << std::endl;
   std::cout << "term of area metric gravity reads:" << std::endl;
-  std::cout << final_expr_kinetic.GetLatexString() << std::endl;
+  std::cout << final_expr_kinetic->GetLatexString() << std::endl;
 
   std::cout << "#########################################" << std::endl;
   std::cout << "The most general ansatz for the mass " << std::endl;
   std::cout << "term of area metric gravity reads:" << std::endl;
-  std::cout << final_expr_mass.GetLatexString("f_", true) << std::endl;
+  std::cout << final_expr_mass->GetLatexString("f_", true) << std::endl;
+
+  final_expr_kinetic->SaveToFile("final_area_kinetic.prs");
+  final_expr_mass->SaveToFile("final_area_mass.prs");
 
   return 0;
 }

@@ -21,6 +21,7 @@ class TensorMonomial : public Tensor {
 
  public:
   TensorMonomial ();
+  TensorMonomial (std::initializer_list<Tensor> list);
 
   void AddFactorRight (Tensor const & factor);
 

@@ -12,8 +12,8 @@ int main () {
   std::cout << std::endl;
   std::cout << " #### kinetic term ####" << std::endl;
 
-  Expression final_expr_kinetic;
-  Expression final_expr_mass;
+  auto final_expr_kinetic = std::make_unique<Expression>();
+  auto final_expr_mass = std::make_unique<Expression>();
 
   {
   Indices indices  {'a', 'b', 'c', 'd', 'p', 'q'};
@@ -59,7 +59,7 @@ int main () {
 
   delta.ExchangeSymmetrise(indices_delta, indices_delta2, false);
 
-  final_expr_kinetic = simplified.ApplyGaugeSymmetry(delta);
+  final_expr_kinetic = std::unique_ptr<Expression>(new Expression(simplified.ApplyGaugeSymmetry(delta)));
   }
   {
   std::cout << " ### mass term ###" << std::endl;
@@ -103,18 +103,18 @@ int main () {
 
   delta.ExchangeSymmetrise(indices_delta, indices_delta2, false);
 
-  final_expr_mass = simplified.ApplyGaugeSymmetry(delta);
+  final_expr_mass = std::unique_ptr<Expression>(new Expression(simplified.ApplyGaugeSymmetry(delta)));
   }
 
   std::cout << "#########################################" << std::endl;
   std::cout << "The most general ansatz for the kinetic " << std::endl;
   std::cout << "term of metric gravity reads:" << std::endl;
-  std::cout << final_expr_kinetic.GetLatexString() << std::endl;
+  std::cout << final_expr_kinetic->GetLatexString() << std::endl;
 
   std::cout << "#########################################" << std::endl;
   std::cout << "The most general ansatz for the mass " << std::endl;
   std::cout << "term of metric gravity reads:" << std::endl;
-  std::cout << final_expr_mass.GetLatexString() << std::endl;
+  std::cout << final_expr_mass->GetLatexString() << std::endl;
 
   return 0;
 }

@@ -210,6 +210,71 @@ TEST(Expression, EliminateEpsilon) {
   EXPECT_EQ("0", expr.GetLatexString());
 }
 
+TEST(Expression, EliminateEpsilonEpsilon) {
+  Tensor epsilon (3, "epsilon");
+  Tensor epsilonI (3, "epsilon");
+  Tensor xi (1, "xi");
+
+  epsilon.SetAntisymmetric();
+  epsilonI.SetAntisymmetric();
+
+  TensorMonomial tm;
+
+  tm.AddFactorRight(epsilon);
+  tm.AddFactorRight(epsilonI);
+  tm.AddFactorRight(xi);
+
+  TensorMonomial tm2;
+  tm2.AddFactorRight(epsilon);
+  tm2.AddFactorRight(epsilonI);
+
+  Indices indices  { 'a', 'b', 'c', 'p', 'q', 'r', 'x' };
+  Indices indices2 { 'a', 'b', 'c', 'a', 'b', 'r' };
+
+  MonomialExpression me  (tm,  indices);
+  MonomialExpression me2 (tm2, indices2);
+
+  Expression expr;
+  expr.AddSummand(me);
+  expr.ThreePlusOne(std::vector<Index>());
+
+  Expression expr2;
+  expr2.AddSummand(me2);
+  expr2.ThreePlusOne(std::vector<Index>());
+
+  EXPECT_EQ("1 epsilon^{ a b c } epsilon^{ p q r } xi^{ x }", expr.GetLatexString());
+  EXPECT_EQ("1 epsilon^{ a b c } epsilon^{ a b r }", expr2.GetLatexString());
+
+  expr.EliminateEpsilonEpsilonI();
+  expr2.EliminateEpsilonEpsilonI();
+
+  EXPECT_EQ(
+"1 gamma^{ a p } gamma^{ b q } gamma^{ c r } xi^{ x }\n\
+- 1 gamma^{ a p } gamma^{ b r } gamma^{ c q } xi^{ x }\n\
+- 1 gamma^{ a q } gamma^{ b p } gamma^{ c r } xi^{ x }\n\
++ 1 gamma^{ a q } gamma^{ b r } gamma^{ c p } xi^{ x }\n\
++ 1 gamma^{ a r } gamma^{ b p } gamma^{ c q } xi^{ x }\n\
+- 1 gamma^{ a r } gamma^{ b q } gamma^{ c p } xi^{ x }"\
+, expr.GetLatexString());
+
+  EXPECT_EQ(
+"1 gamma^{ a a } gamma^{ b b } gamma^{ c r }\n\
+- 1 gamma^{ a a } gamma^{ b r } gamma^{ c b }\n\
+- 1 gamma^{ a b } gamma^{ b a } gamma^{ c r }\n\
++ 1 gamma^{ a b } gamma^{ b r } gamma^{ c a }\n\
++ 1 gamma^{ a r } gamma^{ b a } gamma^{ c b }\n\
+- 1 gamma^{ a r } gamma^{ b b } gamma^{ c a }"\
+  , expr2.GetLatexString());
+
+  expr2.EliminateGamma();
+  expr2.ApplyMonomialSymmetries();
+  expr2.SortMonomials();
+  expr2.SortSummands();
+  expr2.CollectPrefactors();
+
+  EXPECT_EQ("2 gamma^{ c r }", expr2.GetLatexString());
+}
+
 TEST(Expression, EliminateEpsilonEpsilonI) {
   Tensor epsilon (4, "epsilon");
   Tensor epsilonI (4, "epsilonI");

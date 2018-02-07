@@ -13,6 +13,7 @@ class Tensor {
  private:
   bool symmetric;
   bool antisymmetric;
+  bool tracefree;
   int sort_index;
 
   friend class boost::serialization::access;
@@ -35,10 +36,12 @@ class Tensor {
 
   void SetSymmetric();
   void SetAntisymmetric();
+  void SetTracefree();
 
   virtual std::vector<std::pair<std::unique_ptr<Indices>, std::unique_ptr<Tensor>>> GetIndexMapping (Indices const & indices) const;
   bool IsSymmetric() const;
   bool IsAntisymmetric() const;
+  bool IsTracefree() const;
 
   virtual bool operator< (Tensor const & other) const;
   virtual bool operator== (Tensor const & other) const;

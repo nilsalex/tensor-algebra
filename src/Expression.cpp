@@ -35,9 +35,18 @@ Expression::Expression(Expression const & other) : dimension(other.dimension), s
 }
 
 Expression & Expression::operator=(Expression const & other) {
-  Expression tmp { other };
+  Expression tmp ( other );
+  dimension = other.dimension;
   std::swap(summands, tmp.summands);
   return *this;
+}
+
+void Expression::set_dimension (unsigned int const dimension_set) {
+  dimension = dimension_set;
+}
+
+unsigned int Expression::get_dimension (void) const {
+  return dimension;
 }
 
 void Expression::AddSummand (MonomialExpression const & monomial_expression, ScalarSum const & scalar_sum) {
@@ -166,23 +175,19 @@ void Expression::EliminateDelta() {
   bool repeat = true;
 
   while (repeat) {
-    auto summands_new = std::make_unique<Sum>();
     repeat = false;
-    std::transform(summands->cbegin(), summands->cend(), std::back_inserter(*summands_new),
-      [&repeat](auto const & a) {
-        auto summand_new = std::make_pair(std::make_unique<MonomialExpression>(*a.first), std::make_unique<ScalarSum>(*a.second));;
-        Status ret = summand_new.first->EliminateDelta();
+    std::for_each(summands->begin(), summands->end(), 
+      [&repeat,this](auto & a) {
+        Status ret = a.first->EliminateDelta();
         if (ret == DELTA_OK ) {
           repeat = true;
         } else if (ret == DELTA_TO_TRACE) {
-          summand_new.second->MultiplyCoefficient(Rational(4, 1));
+          a.second->MultiplyCoefficient(Rational(dimension, 1));
           repeat = true;
         } else if (ret == ERROR) {
           assert(false);
         }
-        return summand_new;
       });
-    std::swap(summands, summands_new);
   }
 
 }
@@ -193,8 +198,8 @@ void Expression::EliminateEpsilon() {
   while (repeat) {
     repeat = false;
     std::for_each(summands->begin(), summands->end(),
-      [&repeat](auto & a) {
-        Status ret = a.first->EliminateEpsilon();
+      [&repeat,this](auto & a) {
+        Status ret = a.first->EliminateEpsilon(dimension);
         if (ret == EPSILON_TO_ZERO) {
           a.second->MultiplyCoefficient(Rational(0, 1));
           repeat = true;
@@ -252,49 +257,64 @@ void Expression::EliminateEpsilonEpsilonI() {
     // don't repeat unless there has been some action
     repeat = false;
     std::for_each(summands->begin(), summands->end(),
-      [&repeat,&summands_new](auto const & a) {
+      [&repeat,&summands_new,this](auto const & a) {
         // eliminate epsilon and epsilonI in summand
         // return indices of epsilon and epsilonI
-        auto indices_pair = a.first->EliminateEpsilonEpsilonI();   
+        auto indices_pair = a.first->EliminateEpsilonEpsilonI(dimension);   
 
         // if there was no action (returned indices are of size zero),
         // push back old summand to new vector of summands
         //
-        // else, for every permutation, push back the four deltas and
+        // else, for every permutation, push back the (dimension) deltas and
         // then what remains from the original summand (if there is any tensor left)
         if ( indices_pair.first.size() == 0 && indices_pair.second.size() == 0 && !a.first->IsZero()) {
           summands_new->push_back(std::make_pair(std::make_unique<MonomialExpression>(*a.first), std::make_unique<ScalarSum>(*a.second)));
-        } else if ( indices_pair.first.size() == 4 && indices_pair.second.size() == 4 ) {
-          Tensor delta (2, "delta");
+        } else if ( indices_pair.first.size() == dimension && indices_pair.second.size() == dimension ) {
+          Tensor delta (2, (dimension == 3 ? "gamma" : "delta"));
           delta.SetSymmetric();
 
-          TensorMonomial four_deltas;
-          four_deltas.AddFactorRight(delta);
-          four_deltas.AddFactorRight(delta);
-          four_deltas.AddFactorRight(delta);
-          four_deltas.AddFactorRight(delta);
+          TensorMonomial dim_deltas;
 
-          std::vector<size_t> index_numbers { 0, 1, 2, 3 };
+          std::vector<size_t> index_numbers (dimension);
+          std::generate(index_numbers.begin(), index_numbers.end(),
+            [&delta,&dim_deltas,n=0] () mutable {
+              dim_deltas.AddFactorRight(delta);
+              return n++;
+            });
+
           do {
             auto index_number_copy = index_numbers;
+            auto const index_number_copy_const = index_numbers;
             bool sign = Sort(index_number_copy);
 
             ScalarSum coeff = *a.second;
-            if (sign) {
-              coeff.Negate(); // Attention! Additional minus sign because epsilon epsilonI = - delta delta delta delta
+            if (dimension == 4) {
+              if (sign) {
+                coeff.Negate(); // Attention! Additional minus sign because epsilon epsilonI = - delta delta delta delta
+              }
+            } else if (dimension == 3) {
+              if (!sign) {
+                coeff.Negate();
+              }
+            } else {
+              assert(false);
             }
 
-            Indices four_deltas_indices { indices_pair.first.at(0), indices_pair.second.at(index_numbers.at(0)),
-                                          indices_pair.first.at(1), indices_pair.second.at(index_numbers.at(1)), 
-                                          indices_pair.first.at(2), indices_pair.second.at(index_numbers.at(2)), 
-                                          indices_pair.first.at(3), indices_pair.second.at(index_numbers.at(3)) };
+            std::vector<Index> dim_deltas_indices (2*dimension);
+
+            std::for_each(index_number_copy_const.cbegin(), index_number_copy_const.cend(),
+              [&dim_deltas_indices,&indices_pair,&index_numbers] (auto const & a) {
+                dim_deltas_indices[2*a] = indices_pair.first.at(a);
+                dim_deltas_indices[2*a+1] = indices_pair.second.at(index_numbers.at(a));
+              });
             
-            MonomialExpression four_deltas_me (four_deltas, four_deltas_indices);
-            MonomialExpression new_summand = four_deltas_me.MultiplyOther(*a.first);
+            MonomialExpression dim_deltas_me (dim_deltas, Indices(dim_deltas_indices));
+            MonomialExpression new_summand = dim_deltas_me.MultiplyOther(*a.first);
 
             summands_new->push_back(std::make_pair(std::make_unique<MonomialExpression>(new_summand), std::make_unique<ScalarSum>(coeff)));
           } while (std::next_permutation(index_numbers.begin(), index_numbers.end()));
 
+//          repeat = true;
 
         } else {
           assert(false);
@@ -302,6 +322,17 @@ void Expression::EliminateEpsilonEpsilonI() {
       });
     std::swap(summands, summands_new);
   }
+}
+
+void Expression::EliminateTracefree() {
+  std::for_each(summands->begin(), summands->end(),
+    [](auto & a) {
+      if (a.first->EliminateTracefree() == TRACE_TO_ZERO) {
+        a.second->MultiplyCoefficient(Rational(0, 1));
+      }
+    });
+
+  EliminateZeros();
 }
 
 void Expression::EliminateGammaGamma() {
@@ -525,6 +556,13 @@ void Expression::RenameDummies() {
     });
 }
 
+void Expression::MultiplyCoefficient (Rational const & q) {
+  std::for_each(summands->begin(), summands->end(),
+    [q] (auto & a) {
+      a.second->MultiplyCoefficient(q);
+    });
+}
+
 ScalarSum Expression::EvaluateIndices(Indices const & indices, std::vector<size_t> const & numbers) const {
   std::map<Index, size_t> evaluation_map;
 
@@ -545,22 +583,42 @@ ScalarSum Expression::EvaluateIndices(Indices const & indices, std::vector<size_
   return ret;
 }
 
-Expression Expression::MultiplyOther(Expression const & other) const {
-  if (IsZero() || other.IsZero()) {
-    return Expression();
-  }
+void Expression::AddOther(Expression const & other) {
+  auto summands_new = std::make_unique<Sum>();
 
-  Expression ret;
+  summands_new->reserve(this->summands->size() + other.summands->size());
+  std::for_each(summands->cbegin(), summands->cend(),
+    [&summands_new] (auto const & a) {
+      summands_new->emplace_back(std::make_pair(std::make_unique<MonomialExpression>(*a.first), std::make_unique<ScalarSum>(*a.second)));
+    });
+  std::for_each(other.summands->cbegin(), other.summands->cend(),
+    [&summands_new] (auto const & a) {
+      summands_new->emplace_back(std::make_pair(std::make_unique<MonomialExpression>(*a.first), std::make_unique<ScalarSum>(*a.second)));
+    });
+
+  assert(summands_new->size() == this->summands->size() + other.summands->size());
+
+  std::swap(summands, summands_new);
+}
+
+void Expression::MultiplyOther(Expression const & other) {
+  auto summands_new = std::make_unique<Sum>();
+
+  if (!(IsZero() || other.IsZero())) {
 
   std::for_each(summands->cbegin(), summands->cend(),
-    [&ret, &other] (auto const & a) {
+    [&summands_new, &other] (auto const & a) {
       std::for_each(other.summands->cbegin(), other.summands->cend(),
-        [&ret, &a] (auto const & b) {
-          ret.AddSummand(a.first->MultiplyOther(*(b.first)), a.second->MultiplyOther(*(b.second)));
+        [&summands_new, &a] (auto const & b) {
+          summands_new->push_back(std::make_pair(std::make_unique<MonomialExpression>(a.first->MultiplyOther(*(b.first))), std::make_unique<ScalarSum>(a.second->MultiplyOther(*(b.second)))));
         });
       });
 
-  return ret;
+  }
+
+  assert (summands_new->size() == this->summands->size() * other.summands->size());
+
+  std::swap(summands, summands_new);
 }
 
 bool Expression::IsZero() const { return summands->empty(); }

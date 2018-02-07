@@ -138,5 +138,5 @@ Expression Expression::NumericSimplify(Indices const & indices, bool print_matri
   ret.CanonicalisePrefactors();
   ret.RedefineScalars();
 
-  return ret;
+  return Expression(ret);
 }

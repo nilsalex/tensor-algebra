@@ -32,7 +32,13 @@ class Expression {
  public:
   Expression();
   Expression(Expression const & other); 
+  Expression(Expression && other) = delete;
+
   Expression & operator=(Expression const & other);
+  Expression & operator=(Expression && other) = delete;
+
+  void set_dimension(unsigned int const dimension);
+  unsigned int get_dimension(void) const;
 
   void AddSummand (MonomialExpression const & monomial_expression);
   void AddSummand (MonomialExpression const & monomial_expression, Rational const & rational);
@@ -58,6 +64,7 @@ class Expression {
   void EliminateEtaEta();
   void EliminateEtaPartial();
   void EliminateEtaRankOne();
+  void EliminateTracefree();
   void EliminateZeros();
   void RedefineScalars();
   void RenameDummies();
@@ -65,12 +72,15 @@ class Expression {
   void SortSummands();
   void SortSummandsByPrefactors();
 
+  void MultiplyCoefficient(Rational const & q);
+
   void ThreePlusOne(std::vector<Index> indices_to_zero);
 
   Expression ApplyGaugeSymmetry (Expression const & delta) const;
 
   Expression NumericSimplify (Indices const & indices, bool print_matrix = false) const;
-  Expression MultiplyOther (Expression const & other) const;
+  void AddOther (Expression const & other);
+  void MultiplyOther (Expression const & other);
 
   void ExchangeSymmetrise(Indices const & indices_1, Indices const & indices_2, bool anti = false);
 

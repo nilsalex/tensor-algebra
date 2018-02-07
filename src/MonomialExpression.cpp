@@ -4,6 +4,8 @@
 #include <cassert>
 #include <sstream>
 
+#include <iostream>
+
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 
@@ -739,15 +741,15 @@ Status MonomialExpression::EliminateEtaRankOne() {
   }
 }
 
-Status MonomialExpression::EliminateEpsilon() {
+Status MonomialExpression::EliminateEpsilon(unsigned int const dimension) {
   auto it_epsilon = std::find_if(index_mapping->cbegin(), index_mapping->cend(),
-    [this](auto & a) {
-      if (!(a.second->get_name() == "epsilon" || a.second->get_name() == "epsilonI") || a.second->get_rank() != 4 || !a.second->IsAntisymmetric()) {
+    [this,dimension](auto & a) {
+      if (!(a.second->get_name() == "epsilon" || a.second->get_name() == "epsilonI") || a.second->get_rank() != dimension || !a.second->IsAntisymmetric()) {
         return false;
       }
       Indices epsilon_indices = *a.first;
       epsilon_indices.SortAndMakeUnique();
-      if (epsilon_indices.size() < 4) {
+      if (epsilon_indices.size() < dimension) {
         return true;
       }
       auto it_other = std::find_if(index_mapping->cbegin(), index_mapping->cend(),
@@ -808,23 +810,27 @@ Status MonomialExpression::EliminateEpsilonI() {
   }
 }
 
-std::pair<Indices, Indices> MonomialExpression::EliminateEpsilonEpsilonI() {
+std::pair<Indices, Indices> MonomialExpression::EliminateEpsilonEpsilonI(unsigned int const dimension) {
   auto it_epsilon = std::find_if(index_mapping->cbegin(), index_mapping->cend(),
-    [](auto const & a) {
-      return (a.second->get_name() == "epsilon" && a.second->IsAntisymmetric() && a.first->size() == 4);
+    [dimension](auto const & a) {
+      return (a.second->get_name() == "epsilon" && a.second->IsAntisymmetric() && a.first->size() == dimension);
     });
-  
+
+  if (it_epsilon == index_mapping->cend()) {
+    return std::make_pair(Indices { }, Indices { });
+  }
+
   auto it_epsilonI = std::find_if(index_mapping->cbegin(), index_mapping->cend(),
-    [](auto const & a) {
-      return (a.second->get_name() == "epsilonI" && a.second->IsAntisymmetric() && a.first->size() == 4);
+    [&it_epsilon,dimension](auto const & a) {
+      return ((&a != &(*it_epsilon)) && a.second->get_name() == (dimension == 4 ? "epsilonI" : "epsilon") && a.second->IsAntisymmetric() && a.first->size() == dimension);
     });
   
-  if (it_epsilon == index_mapping->cend() || it_epsilonI == index_mapping->cend()) {
+  if (it_epsilonI == index_mapping->cend()) {
     return std::make_pair(Indices { }, Indices { });
   } else {
     auto epsilon = std::make_pair(std::make_unique<Indices>(*(it_epsilon->first)), std::make_unique<Tensor>(*(it_epsilon->second)));
     auto epsilonI = std::make_pair(std::make_unique<Indices>(*(it_epsilonI->first)), std::make_unique<Tensor>(*(it_epsilonI->second)));
-
+    
     index_mapping->erase(
       std::remove_if(index_mapping->begin(), index_mapping->end(),
         [&epsilon,&epsilonI] (auto const & a) {
@@ -926,44 +932,92 @@ Status MonomialExpression::EliminateGamma() {
   return EliminateDelta("gamma");
 }
 
+Status MonomialExpression::EliminateTracefree() {
+  if (
+    std::find_if(index_mapping->cbegin(), index_mapping->cend(),
+      [] (auto const & a) {
+        return (a.second->IsTracefree() && a.first->at(0) == a.first->at(1));
+      }) != index_mapping->cend()
+    ) {
+    return TRACE_TO_ZERO;
+  } else {
+    return NO_ACTION;
+  }
+}
+
 Status MonomialExpression::EliminateDelta(std::string const & delta_name) {
 
-  for (auto it_delta = index_mapping->begin(); it_delta != index_mapping->end(); ++it_delta) {
+  auto it_other = index_mapping->cend();
 
-    if (!(it_delta->second->get_name() == delta_name && it_delta->second->get_rank() == 2)) {
-      continue;
-    } else if (it_delta->first->at(0) == it_delta->first->at(1)) {
-      index_mapping->erase(std::remove(index_mapping->begin(), index_mapping->end(), *it_delta), index_mapping->end());
-      return DELTA_TO_TRACE;
+  auto it_delta = std::find_if(index_mapping->cbegin(), index_mapping->cend(),
+    [&delta_name,&it_other,this] (auto const & a) {
+
+    if (!(a.second->get_name() == delta_name && a.second->get_rank() == 2)) {
+      return false;
+    } else if (a.first->at(0) == a.first->at(1)) {
+      return true;
     } else {
       Indices overlap;
-      auto it_other = std::find_if(index_mapping->cbegin(), index_mapping->cend(),
-        [&it_delta,&overlap] (auto const & a) {
-          if (&a == &(*it_delta)) {
+      it_other = std::find_if(index_mapping->cbegin(), index_mapping->cend(),
+        [&a,&overlap] (auto const & b) {
+          if (&b == &(a)) {
             return false;
           } else {
-            overlap = a.first->Overlap(*(it_delta->first));
+            overlap = b.first->Overlap(*(a.first));
             return (overlap.size() > 0);
           }
         });
   
       if (it_other == index_mapping->cend()) {
-        continue;
+        return false;
       } else {
-        if (overlap.size() == 2) {
-          it_other->first->Replace(overlap.at(1), overlap.at(0));
-        } else {
-          if (overlap.at(0) == it_delta->first->at(0)) {
-            it_other->first->Replace(overlap.at(0), it_delta->first->at(1));
-          } else {
-            it_other->first->Replace(overlap.at(0), it_delta->first->at(0));
-          }
-        }
-        index_mapping->erase(std::remove(index_mapping->begin(), index_mapping->end(), *it_delta), index_mapping->end());
-        return DELTA_OK;
+        return true;
       }
     }
+
+    });
+
+  if (it_delta == index_mapping->cend()) {
+    return NO_ACTION;
+  } else if (it_delta->first->at(0) == it_delta->first->at(1)) {
+    index_mapping->erase(std::remove_if(index_mapping->begin(), index_mapping->end(),
+      [&it_delta] (auto const & a) {
+        return (&a == &*it_delta);
+      }), index_mapping->end());
+    return DELTA_TO_TRACE;
+  } else if (it_other != index_mapping->cend() && it_delta != it_other) {
+    Indices overlap = it_delta->first->Overlap(*(it_other->first));
+    
+    if (overlap.size() == 2) {
+      it_other->first->Replace(overlap.at(1), overlap.at(0));
+    } else {
+      if (overlap.at(0) == it_delta->first->at(0)) {
+        it_other->first->Replace(overlap.at(0), it_delta->first->at(1));
+      } else {
+        it_other->first->Replace(overlap.at(0), it_delta->first->at(0));
+      }
+    }
+    index_mapping->erase(std::remove_if(index_mapping->begin(), index_mapping->end(),
+      [&it_delta] (auto const & a) {
+        return (&a == &(*it_delta));
+      }), index_mapping->end());
+    return DELTA_OK;
+  } else {
+    return NO_ACTION;
   }
+
+/*
+  if (delta_name == "gamma") {
+    std::for_each(index_mapping->begin(), index_mapping->end(),
+      [] (auto & a) {
+        if (a.second->get_name() == "delta") {
+          auto new_tensor = std::make_unique<Tensor>(2, "gamma");
+          new_tensor->SetSymmetric();
+          std::swap(a.second, new_tensor);
+        }
+      });
+  }
+*/
 
   return NO_ACTION;
 

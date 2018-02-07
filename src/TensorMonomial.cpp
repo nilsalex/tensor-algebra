@@ -17,6 +17,13 @@ template void TensorMonomial::serialize<boost::archive::text_iarchive>(boost::ar
 
 TensorMonomial::TensorMonomial () : Tensor(0) { }
 
+TensorMonomial::TensorMonomial (std::initializer_list<Tensor> list) : TensorMonomial() {
+  std::for_each(list.begin(), list.end(),
+    [this] (auto const & a) {
+      factors.emplace_back(std::make_unique<Tensor>(a));
+    });
+}
+
 std::vector<std::pair<std::unique_ptr<Indices>, std::unique_ptr<Tensor>>> TensorMonomial::GetIndexMapping (Indices const & indices) const {
   std::vector<std::pair<std::unique_ptr<Indices>, std::unique_ptr<Tensor>>> ret;
 
