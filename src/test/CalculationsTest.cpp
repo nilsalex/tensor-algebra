@@ -228,7 +228,7 @@ TEST(Calculations, 3plus1) {
   E_mnpq.AddSummand(me_epsilon_epsilon_phi2, Rational(1,1));
 
   EXPECT_EQ(
-"2 gamma^{ m n } A^{ }\n\
+"2 gamma^{ m n } A\n\
 - 1 phi1^{ m n }"
   , E_0m0n.GetLatexString());
 
@@ -236,7 +236,7 @@ TEST(Calculations, 3plus1) {
 "- 1 gamma^{ m n } B^{ p }\n\
 + 1 gamma^{ m p } B^{ n }\n\
 + 1/2 gamma^{ u v } phi1^{ u v } epsilon^{ m n p }\n\
-- 1 A^{ } epsilon^{ m n p }\n\
+- 1 A epsilon^{ m n p }\n\
 + 1 phi3^{ m u } epsilon^{ n p u }"
   , E_0mnp.GetLatexString());
 
@@ -276,17 +276,16 @@ TEST(Calculations, 3plus1) {
   EQ_ab_1.RenameDummies();
   EQ_ab_1.ApplyMonomialSymmetries();
   EQ_ab_1.SortMonomials();
-  EQ_ab_1.SortSummands();
+  EQ_ab_1.SortSummandsByLastFactors();
   EQ_ab_1.CollectPrefactors();
   EQ_ab_1.CanonicalisePrefactors();
   EQ_ab_1.EliminateZeros();
 
   EXPECT_EQ(
 
-"(1*e_1 + 2*e_2) gamma^{ a b } phi1^{ c c }\n\
-+ (- 6*e_1 - 16*e_2 - 4*e_3 - 4*e_4) gamma^{ a b } A^{ }\n\
-+ (2*e_2 + 2*e_3 + 2*e_4) phi1^{ a b }"
-
+"(2*e_2 + 2*e_3 + 2*e_4) phi1^{ a b }\n\
++ (1*e_1 + 2*e_2) gamma^{ a b } phi1^{ c c }\n\
++ (- 6*e_1 - 16*e_2 - 4*e_3 - 4*e_4) gamma^{ a b } A"
   , EQ_ab_1.GetLatexString());
 
 
@@ -312,15 +311,15 @@ TEST(Calculations, 3plus1) {
   EQ_ab_2.SortMonomials();
   EQ_ab_2.ApplyMonomialSymmetriesToContractions();
   EQ_ab_2.RenameDummies();
-  EQ_ab_2.SortSummands();
+  EQ_ab_2.SortSummandsByLastFactors();
   EQ_ab_2.CollectPrefactors();
   EQ_ab_2.CanonicalisePrefactors();
   EQ_ab_2.EliminateZeros();
 
   EXPECT_EQ(
 "(- 3*e_5 - 2*e_6) gamma^{ a b } phi1^{ c c }\n\
-+ (6*e_5 + 4*e_6) gamma^{ a b } A^{ }\n\
-- 4*e_6 phi3^{ a b }"
+- 4*e_6 phi3^{ a b }\n\
++ (6*e_5 + 4*e_6) gamma^{ a b } A"
   , EQ_ab_2.GetLatexString());
 
   Expression ansatz_mnpq (ansatz);
@@ -340,14 +339,14 @@ TEST(Calculations, 3plus1) {
   EQ_ab_3.SortMonomials();
   EQ_ab_3.ApplyMonomialSymmetriesToContractions();
   EQ_ab_3.RenameDummies();
-  EQ_ab_3.SortSummands();
+  EQ_ab_3.SortSummandsByLastFactors();
   EQ_ab_3.CollectPrefactors();
   EQ_ab_3.CanonicalisePrefactors();
 
   EXPECT_EQ(
 "(12*e_1 + 16*e_2) gamma^{ a b } phi1^{ c c }\n\
-+ (4*e_1 + 8*e_2) gamma^{ a b } phi2^{ c c }\n\
-- 8*e_2 phi2^{ a b }"
+- 8*e_2 phi2^{ a b }\n\
++ (4*e_1 + 8*e_2) gamma^{ a b } phi2^{ c c }"
   , EQ_ab_3.GetLatexString());
 
   EQ_ab_1.MultiplyCoefficient(Rational(4, 1));
@@ -357,17 +356,17 @@ TEST(Calculations, 3plus1) {
   EQ_ab.AddOther(EQ_ab_2);
   EQ_ab.AddOther(EQ_ab_3);
 
-  EQ_ab.SortSummands();
+  EQ_ab.SortSummandsByLastFactors();
   EQ_ab.CollectPrefactors();
   EQ_ab.CanonicalisePrefactors();
   EQ_ab.EliminateZeros();
 
   EXPECT_EQ(
-"(16*e_1 + 24*e_2 - 12*e_5 - 8*e_6) gamma^{ a b } phi1^{ c c }\n\
-+ (4*e_1 + 8*e_2) gamma^{ a b } phi2^{ c c }\n\
-+ (- 24*e_1 - 64*e_2 - 16*e_3 - 16*e_4 + 24*e_5 + 16*e_6) gamma^{ a b } A^{ }\n\
-+ (8*e_2 + 8*e_3 + 8*e_4) phi1^{ a b }\n\
+"(8*e_2 + 8*e_3 + 8*e_4) phi1^{ a b }\n\
++ (16*e_1 + 24*e_2 - 12*e_5 - 8*e_6) gamma^{ a b } phi1^{ c c }\n\
 - 8*e_2 phi2^{ a b }\n\
-- 16*e_6 phi3^{ a b }"
++ (4*e_1 + 8*e_2) gamma^{ a b } phi2^{ c c }\n\
+- 16*e_6 phi3^{ a b }\n\
++ (- 24*e_1 - 64*e_2 - 16*e_3 - 16*e_4 + 24*e_5 + 16*e_6) gamma^{ a b } A"
   ,EQ_ab.GetLatexString());
 }

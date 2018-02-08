@@ -198,7 +198,7 @@ int main() {
   EQ_ab.SortMonomials();
   EQ_ab.ApplyMonomialSymmetriesToContractions();
   EQ_ab.RenameDummies();
-  EQ_ab.SortSummands();
+  EQ_ab.SortSummandsByLastFactors();
   EQ_ab.CollectPrefactors();
   EQ_ab.CanonicalisePrefactors();
   
@@ -293,7 +293,7 @@ int main() {
   EQ_ab_00.SortMonomials();
   EQ_ab_00.ApplyMonomialSymmetriesToContractions();
   EQ_ab_00.RenameDummies();
-  EQ_ab_00.SortSummands();
+  EQ_ab_00.SortSummandsByLastFactors();
   EQ_ab_00.CollectPrefactors();
   EQ_ab_00.CanonicalisePrefactors();
 
@@ -392,7 +392,7 @@ int main() {
   EQ_ab_0r.SortMonomials();
   EQ_ab_0r.ApplyMonomialSymmetriesToContractions();
   EQ_ab_0r.RenameDummies();
-  EQ_ab_0r.SortSummands();
+  EQ_ab_0r.SortSummandsByLastFactors();
   EQ_ab_0r.CollectPrefactors();
   EQ_ab_0r.CanonicalisePrefactors();
 
@@ -491,7 +491,7 @@ int main() {
   EQ_ab_rs.SortMonomials();
   EQ_ab_rs.ApplyMonomialSymmetriesToContractions();
   EQ_ab_rs.RenameDummies();
-  EQ_ab_rs.SortSummands();
+  EQ_ab_rs.SortSummandsByLastFactors();
   EQ_ab_rs.CollectPrefactors();
   EQ_ab_rs.CanonicalisePrefactors();
 

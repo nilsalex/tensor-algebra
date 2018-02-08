@@ -79,5 +79,7 @@ class MonomialExpression {
 
   std::string GetLatexString(bool upper = true) const;
 
+  static bool CompareReversed (MonomialExpression const & lop, MonomialExpression const & rop);
+
   ~MonomialExpression() = default;
 };

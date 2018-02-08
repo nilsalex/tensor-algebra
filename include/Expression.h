@@ -71,6 +71,7 @@ class Expression {
   void SortMonomials();
   void SortSummands();
   void SortSummandsByPrefactors();
+  void SortSummandsByLastFactors();
 
   void MultiplyCoefficient(Rational const & q);
 

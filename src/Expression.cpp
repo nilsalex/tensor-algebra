@@ -452,6 +452,12 @@ void Expression::SortSummands() {
   std::sort(summands->begin(), summands->end());
 }
 
+bool CompareSummandsReversed(Summand const & a, Summand const & b);
+
+void Expression::SortSummandsByLastFactors() {
+  std::sort(summands->begin(), summands->end(), CompareSummandsReversed);
+}
+
 void Expression::ExchangeSymmetrise(Indices const & indices1, Indices const & indices2, bool anti) {
   auto summands_new = std::make_unique<Sum>();
   
@@ -663,6 +669,18 @@ bool operator< (Summand const & lop, Summand const & rop) {
   if (*lop.first < *rop.first) {
     return true;
   } else if (*rop.first < *lop.first) {
+    return false;
+  } else if (*lop.second < *rop.second) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+bool CompareSummandsReversed (Summand const & lop, Summand const & rop) {
+  if (MonomialExpression::CompareReversed(*lop.first, *rop.first)) {
+    return true;
+  } else if (MonomialExpression::CompareReversed(*rop.first, *lop.first)) {
     return false;
   } else if (*lop.second < *rop.second) {
     return true;

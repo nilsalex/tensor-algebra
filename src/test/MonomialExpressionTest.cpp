@@ -588,13 +588,13 @@ TEST(MonomialExpression, GetLatexString) {
   const MonomialExpression m2 (tm, i2);
 
   EXPECT_EQ("A^{ a b e }", m1.GetLatexString());
-  EXPECT_EQ("A^{ a b c } the ting goes skrrra^{ d e f g h } Y^{ i j } ^{ }", m2.GetLatexString());
+  EXPECT_EQ("A^{ a b c } the ting goes skrrra^{ d e f g h } Y^{ i j } ", m2.GetLatexString());
 
   EXPECT_EQ("A^{ a b e }", m1.GetLatexString(true));
-  EXPECT_EQ("A^{ a b c } the ting goes skrrra^{ d e f g h } Y^{ i j } ^{ }", m2.GetLatexString(true));
+  EXPECT_EQ("A^{ a b c } the ting goes skrrra^{ d e f g h } Y^{ i j } ", m2.GetLatexString(true));
 
   EXPECT_EQ("A_{ a b e }", m1.GetLatexString(false));
-  EXPECT_EQ("A_{ a b c } the ting goes skrrra_{ d e f g h } Y_{ i j } _{ }", m2.GetLatexString(false));
+  EXPECT_EQ("A_{ a b c } the ting goes skrrra_{ d e f g h } Y_{ i j } ", m2.GetLatexString(false));
 }
 
 TEST(MonomialExpression, equals) {

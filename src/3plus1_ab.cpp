@@ -176,7 +176,7 @@ int main() {
   EQ_ab.AddOther(EQ_ab_2);
   EQ_ab.AddOther(EQ_ab_3);
 
-  EQ_ab.SortSummands();
+  EQ_ab.SortSummandsByLastFactors();
   EQ_ab.CollectPrefactors();
   EQ_ab.CanonicalisePrefactors();
   EQ_ab.EliminateZeros();
@@ -259,7 +259,7 @@ int main() {
   EQ_ab_00.AddOther(EQ_ab_00_2);
   EQ_ab_00.AddOther(EQ_ab_00_3);
 
-  EQ_ab_00.SortSummands();
+  EQ_ab_00.SortSummandsByLastFactors();
   EQ_ab_00.CollectPrefactors();
   EQ_ab_00.CanonicalisePrefactors();
   EQ_ab_00.EliminateZeros();
@@ -346,7 +346,7 @@ int main() {
   EQ_ab_0r.AddOther(EQ_ab_0r_2);
   EQ_ab_0r.AddOther(EQ_ab_0r_3);
 
-  EQ_ab_0r.SortSummands();
+  EQ_ab_0r.SortSummandsByLastFactors();
   EQ_ab_0r.CollectPrefactors();
   EQ_ab_0r.CanonicalisePrefactors();
   EQ_ab_0r.EliminateZeros();
@@ -432,7 +432,7 @@ int main() {
   EQ_ab_rs.AddOther(EQ_ab_rs_2);
   EQ_ab_rs.AddOther(EQ_ab_rs_3);
 
-  EQ_ab_rs.SortSummands();
+  EQ_ab_rs.SortSummandsByLastFactors();
   EQ_ab_rs.CollectPrefactors();
   EQ_ab_rs.CanonicalisePrefactors();
   EQ_ab_rs.EliminateZeros();

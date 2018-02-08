@@ -192,5 +192,9 @@ int main () {
   std::cout << "term of area metric gravity reads:" << std::endl;
   std::cout << final_expr_mass->GetLatexString("f_", true) << std::endl;
 
+  final_expr_kinetic->SaveToFile("final_area_kinetic.prs");
+  final_expr_mass->SaveToFile("final_area_mass.prs");
+
+
   return 0;
 }

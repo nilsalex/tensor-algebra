@@ -1148,10 +1148,33 @@ std::string MonomialExpression::GetLatexString(bool upper) const {
       ss << " ";
     }
     first = false;
-    ss << pair.second->get_name() << (upper ? "^" : "_") << pair.first->ToString();
+    ss << pair.second->get_name();
+    if (pair.first->size() != 0) {
+      ss << (upper ? "^" : "_") << pair.first->ToString();
+    }
   }
 
   return ss.str();
+}
+
+bool MonomialExpression::CompareReversed(MonomialExpression const & lop, MonomialExpression const & rop) {
+  IndexMapping lop_rev;
+  IndexMapping rop_rev;
+
+  lop_rev.reserve(lop.index_mapping->size());
+  rop_rev.reserve(rop.index_mapping->size());
+
+  std::for_each(lop.index_mapping->rbegin(), lop.index_mapping->rend(),
+    [&lop_rev] (auto const & a) {
+      lop_rev.emplace_back(std::make_pair(std::make_unique<Indices>(*a.first), std::make_unique<Tensor>(*a.second)));
+    });
+
+  std::for_each(rop.index_mapping->rbegin(), rop.index_mapping->rend(),
+    [&rop_rev] (auto const & a) {
+      rop_rev.emplace_back(std::make_pair(std::make_unique<Indices>(*a.first), std::make_unique<Tensor>(*a.second)));
+    });
+
+  return lop_rev < rop_rev;
 }
 
 bool MonomialExpression::operator== (MonomialExpression const & other) const { return *index_mapping == *other.index_mapping; }
