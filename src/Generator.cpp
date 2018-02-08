@@ -36,7 +36,7 @@ Expression Generator::Generate() {
     expression->SortMonomials();
   } while (perm.NextIndexPermutation());
 
-  if (indices.size() > 4) {
+  if (indices.size() > 3) {
 
     TensorMonomial S;
     S.AddFactorRight(epsilon);
