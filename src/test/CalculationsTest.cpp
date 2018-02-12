@@ -599,4 +599,55 @@ TEST(Calculations, 3plus1) {
 
   EXPECT_EQ("0", EQ_abcd_rs_2.GetLatexString());
 
+
+  Expression ansatz_kinetic_abcdmnpq0r (ansatz_kinetic);
+
+  ansatz_kinetic_abcdmnpq0r.ThreePlusOne(std::vector<Index> ({Index::p}));
+  ansatz_kinetic_abcdmnpq0r.SubstituteIndices(Indices ({'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'q'}), Indices ({'a', 'b', 'c', 'd', 'm', 'n', 'p', 'q', 'r'}));
+
+  ansatz_kinetic_abcdmnpq0r.ApplyMonomialSymmetries();
+  ansatz_kinetic_abcdmnpq0r.SortMonomials();
+  ansatz_kinetic_abcdmnpq0r.SortSummands();
+  ansatz_kinetic_abcdmnpq0r.CollectPrefactors();
+  ansatz_kinetic_abcdmnpq0r.CanonicalisePrefactors();
+  ansatz_kinetic_abcdmnpq0r.EliminateZeros();
+  ansatz_kinetic_abcdmnpq0r.SortSummandsByPrefactors();
+
+  Expression EQ_abcd_0r_1 ( ansatz_kinetic_abcdmnpq0r );
+  EXPECT_EQ("", EQ_abcd_0r_1.GetLatexString());
+  EQ_abcd_0r_1.MultiplyOther(E_mnpq0r);
+  EXPECT_EQ("", EQ_abcd_0r_1.GetLatexString());
+
+//  EQ_abcd_0r_1.MultiplyOther(epsilon_xab);
+//  EQ_abcd_0r_1.MultiplyOther(epsilon_ycd);
+//  EQ_abcd_0r_1.SubstituteFreeIndices(Indices ({'x', 'y'}), Indices ({'a', 'b'}));
+
+  EQ_abcd_0r_1.EliminateEpsilonEpsilonI();
+  EQ_abcd_0r_1.EliminateGamma();
+  EQ_abcd_0r_1.EliminateEpsilon();
+  EQ_abcd_0r_1.EliminateTracefree();
+  EQ_abcd_0r_1.EliminateZeros();
+  EQ_abcd_0r_1.ApplyMonomialSymmetries();
+  EQ_abcd_0r_1.SortMonomials();
+  EQ_abcd_0r_1.ApplyMonomialSymmetriesToContractions();
+  EQ_abcd_0r_1.RenameDummies();
+  EQ_abcd_0r_1.SortSummandsByLastFactors();
+  EQ_abcd_0r_1.CollectPrefactors();
+  EQ_abcd_0r_1.CanonicalisePrefactors();
+
+  EXPECT_EQ("", EQ_abcd_0r_1.GetLatexString());
+/*
+  EQ_abcd_0r_1.ExchangeSymmetrise(Indices ({'a', 'b'}), Indices ({'b', 'a'}), true);
+
+  EQ_abcd_0r_1.ApplyMonomialSymmetries();
+  EQ_abcd_0r_1.SortMonomials();
+  EQ_abcd_0r_1.ApplyMonomialSymmetriesToContractions();
+  EQ_abcd_0r_1.RenameDummies();
+  EQ_abcd_0r_1.SortSummandsByLastFactors();
+  EQ_abcd_0r_1.CollectPrefactors();
+  EQ_abcd_0r_1.CanonicalisePrefactors();
+
+  EXPECT_EQ("0", EQ_abcd_0r_1.GetLatexString());
+*/
+
 }
