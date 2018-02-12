@@ -190,6 +190,7 @@ int main() {
 
   Expression EQ_ab ( EQ_abc );
   EQ_ab.MultiplyOther(epsilon_xbc);
+  EQ_ab.SubstituteFreeIndices(Indices ({'a', 'x'}), Indices ({'a', 'b'}));
 
   EQ_ab.EliminateEpsilonEpsilonI();
   EQ_ab.EliminateGamma();
@@ -284,6 +285,7 @@ int main() {
 
   Expression EQ_ab_00 ( EQ_abc_00 );
   EQ_ab_00.MultiplyOther(epsilon_xbc);
+  EQ_ab_00.SubstituteFreeIndices(Indices ({'a', 'x'}), Indices ({'a', 'b'}));
 
   EQ_ab_00.EliminateEpsilonEpsilonI();
   EQ_ab_00.EliminateGamma();
@@ -309,19 +311,6 @@ int main() {
 
   ansatz_kinetic_0abc0m0n0r.ThreePlusOne(std::vector<Index> ({Index::a, Index::e, Index::g, Index::p}));
   ansatz_kinetic_0abc0m0n0r.SubstituteIndices(Indices ({'b', 'c', 'd', 'f', 'h', 'q'}), Indices ({'a', 'b', 'c', 'm', 'n', 'r'}));
-
-  ansatz_kinetic_0abc0m0n0r.ApplyMonomialSymmetries();
-  ansatz_kinetic_0abc0m0n0r.SortMonomials();
-  ansatz_kinetic_0abc0m0n0r.SortSummands();
-  ansatz_kinetic_0abc0m0n0r.CollectPrefactors();
-  ansatz_kinetic_0abc0m0n0r.CanonicalisePrefactors();
-  ansatz_kinetic_0abc0m0n0r.EliminateZeros();
-  ansatz_kinetic_0abc0m0n0r.SortSummandsByPrefactors();
-
-
-  std::cout << "*********************************************" << std::endl;
-  std::cout << ansatz_kinetic_0abc0m0n0r.GetLatexString() << std::endl;
-  std::cout << "*********************************************" << std::endl;
 
   Expression EQ_abc_0r_1 ( ansatz_kinetic_0abc0m0n0r );
   EQ_abc_0r_1.MultiplyOther(E_0m0n0r);
@@ -395,6 +384,7 @@ int main() {
 
   Expression EQ_ab_0r ( EQ_abc_0r );
   EQ_ab_0r.MultiplyOther(epsilon_xbc);
+  EQ_ab_0r.SubstituteFreeIndices(Indices ({'a', 'x'}), Indices ({'a', 'b'}));
 
   EQ_ab_0r.EliminateEpsilonEpsilonI();
   EQ_ab_0r.EliminateGamma();
@@ -412,7 +402,6 @@ int main() {
   std::cout << "##########################################" << std::endl;
 
   std::cout << EQ_ab_0r.GetLatexString() << std::endl;
-
 
 
   // ################################################################################
@@ -493,6 +482,7 @@ int main() {
 
   Expression EQ_ab_rs ( EQ_abc_rs );
   EQ_ab_rs.MultiplyOther(epsilon_xbc);
+  EQ_ab_rs.SubstituteFreeIndices(Indices ({'a', 'x'}), Indices ({'a', 'b'}));
 
   EQ_ab_rs.EliminateEpsilonEpsilonI();
   EQ_ab_rs.EliminateGamma();

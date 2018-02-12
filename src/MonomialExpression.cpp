@@ -4,8 +4,6 @@
 #include <cassert>
 #include <sstream>
 
-#include <iostream>
-
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 
@@ -465,6 +463,41 @@ void MonomialExpression::ExchangeIndices(Indices const & indices1, Indices const
   }
 
   std::swap(index_mapping, index_mapping_new);
+}
+
+void MonomialExpression::ExchangeFreeIndices(Indices const & indices1, Indices const & indices2) {
+  auto indices1_v (indices1.get_vector());
+  auto indices2_v (indices2.get_vector());
+
+  auto free_indices (GetFreeIndices());
+  auto dummy_indices (GetDummyIndices());
+
+  auto new_dummies (new_dummies_template);
+
+  new_dummies.erase(std::remove_if(new_dummies.begin(), new_dummies.end(),
+    [&indices2_v] (auto & a) {
+      return std::find(indices2_v.begin(), indices2_v.end(), a) != indices2_v.end();
+    }), new_dummies.end());
+
+  new_dummies.resize(dummy_indices.size());
+
+  std::vector<Index> indices1_v_total (indices1_v);
+  indices1_v_total.reserve(indices1_v.size() + dummy_indices.size());
+  std::for_each(dummy_indices.cbegin(), dummy_indices.cend(),
+    [&indices1_v_total] (auto const & a) {
+      indices1_v_total.emplace_back(a);
+    });
+
+  std::vector<Index> indices2_v_total (indices2_v);
+  indices2_v_total.reserve(indices2_v.size() + new_dummies.size());
+  std::for_each(new_dummies.cbegin(), new_dummies.cend(),
+    [&indices2_v_total] (auto const & a) {
+      indices2_v_total.emplace_back(a);
+    });
+
+  assert(indices1_v_total.size() == indices2_v_total.size());
+
+  ExchangeIndices(Indices(indices1_v_total), Indices(indices2_v_total));
 }
 
 void MonomialExpression::AddFactorRight(MonomialExpression const & other) {

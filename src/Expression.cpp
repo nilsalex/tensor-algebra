@@ -430,6 +430,13 @@ void Expression::SubstituteIndices(Indices const & indices_old, Indices const & 
     });
 }
 
+void Expression::SubstituteFreeIndices(Indices const & indices_old, Indices const & indices_new) {
+  std::for_each(summands->begin(), summands->end(),
+    [&indices_old,&indices_new] (auto & a) {
+      a.first->ExchangeFreeIndices(indices_old,indices_new);
+    });
+}
+
 void Expression::SubstituteVariable(size_t const variable_old, ScalarSum const & scalar_sum_new) {
   std::for_each(summands->begin(), summands->end(),
     [variable_old,scalar_sum_new](auto & a) {
@@ -471,7 +478,7 @@ void Expression::ExchangeSymmetrise(Indices const & indices1, Indices const & in
     if (anti) {
       summand_copy.second->Negate();
     }
-    summand_copy.first->ExchangeIndices(indices1, indices2);
+    summand_copy.first->ExchangeFreeIndices(indices1, indices2);
     summands_new->push_back(std::make_pair(std::make_unique<MonomialExpression>(), std::make_unique<ScalarSum>()));
     std::swap(*(--(summands_new->end())), summand_copy);
   }

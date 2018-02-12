@@ -189,6 +189,10 @@ TEST(Calculations, 3plus1) {
   delta.SetSymmetric();
   Tensor epsilon(3, "epsilon");
   epsilon.SetAntisymmetric();
+  Tensor partial_t(0, "partial_t");
+  Tensor partial(1, "partial");
+  Tensor partial_rs (2, "partial");
+  partial_rs.SetSymmetric();
 
   MonomialExpression me_gamma_A (TensorMonomial ({gamma, A}), Indices({'m', 'n'}));
   MonomialExpression me_phi1 (phi1, Indices({'m', 'n'}));
@@ -201,6 +205,13 @@ TEST(Calculations, 3plus1) {
   MonomialExpression me_B_epsilon (TensorMonomial ({B, epsilon}), Indices({'m', 'n', 'p', 'q'}));
   MonomialExpression me_gamma_phi1_gamma_gamma (TensorMonomial ({gamma, phi1, gamma, gamma}), Indices ({'u', 'v', 'u', 'v', 'm', 'p', 'q', 'n'}));
   MonomialExpression me_epsilon_epsilon_phi2 (TensorMonomial ({epsilon, epsilon, phi2}), Indices ({'m', 'n', 'u', 'p', 'q', 'v', 'u', 'v'}));
+
+  MonomialExpression me_partial_t_r(TensorMonomial ({partial_t, partial}), Indices ({'r'}));
+  MonomialExpression me_partial_r_s(TensorMonomial ({partial_rs}), Indices ({'r', 's'}));
+
+  MonomialExpression me_epsilon_xbc (TensorMonomial ({epsilon}), Indices ({'x', 'b', 'c'}));
+  MonomialExpression me_epsilon_xab (TensorMonomial ({epsilon}), Indices ({'x', 'a', 'b'}));
+  MonomialExpression me_epsilon_ycd (TensorMonomial ({epsilon}), Indices ({'y', 'c', 'd'}));
 
   Expression E_0m0n;
   E_0m0n.AddSummand(me_gamma_A, Rational(2,1));
@@ -226,6 +237,19 @@ TEST(Calculations, 3plus1) {
   me_gamma_phi1_gamma_gamma.ExchangeIndices(Indices({'u', 'v', 'u', 'v', 'm', 'p', 'q', 'n'}), Indices({'u', 'v', 'u', 'v', 'm', 'q', 'p', 'n'}));
   E_mnpq.AddSummand(me_gamma_phi1_gamma_gamma, Rational(-1, 1));
   E_mnpq.AddSummand(me_epsilon_epsilon_phi2, Rational(1,1));
+
+  Expression epsilon_xbc;
+  epsilon_xbc.set_dimension(3);
+  epsilon_xbc.AddSummand(me_epsilon_xbc, Rational(1, 2));
+
+  Expression epsilon_xab;
+  epsilon_xab.set_dimension(3);
+  epsilon_xab.AddSummand(me_epsilon_xab, Rational(1, 2));
+
+  Expression epsilon_ycd;
+  epsilon_ycd.set_dimension(3);
+  epsilon_ycd.AddSummand(me_epsilon_ycd, Rational(1, 2));
+
 
   EXPECT_EQ(
 "2 gamma^{ m n } A\n\
@@ -369,4 +393,210 @@ TEST(Calculations, 3plus1) {
 - 16*e_6 phi3^{ a b }\n\
 + (- 24*e_1 - 64*e_2 - 16*e_3 - 16*e_4 + 24*e_5 + 16*e_6) gamma^{ a b } A"
   ,EQ_ab.GetLatexString());
+
+  EQ_ab.ExchangeSymmetrise(Indices({'a', 'b'}), Indices({'b', 'a'}), true);
+
+  EQ_ab.ApplyMonomialSymmetries();
+  EQ_ab.SortMonomials();
+  EQ_ab.SortSummands();
+  EQ_ab.CollectPrefactors();
+  EQ_ab.CanonicalisePrefactors();
+  EQ_ab.EliminateZeros();
+
+  EXPECT_EQ("0", EQ_ab.GetLatexString());
+
+  Expression partial_t_r;
+  partial_t_r.set_dimension(3);
+  partial_t_r.AddSummand(me_partial_t_r, Rational(1,1));
+
+  Expression E_0m0n0r ( E_0m0n );
+  E_0m0n0r.MultiplyOther(partial_t_r);
+
+  Expression E_0mnp0r ( E_0mnp );
+  E_0mnp0r.MultiplyOther(partial_t_r);
+
+  Expression E_mnpq0r ( E_mnpq );
+  E_mnpq0r.MultiplyOther(partial_t_r);
+
+  Expression ansatz_kinetic;
+
+  ansatz_kinetic.LoadFromFile("final_area_kinetic.prs");
+
+  Expression ansatz_kinetic_0abc0m0n0r (ansatz_kinetic);
+
+  ansatz_kinetic_0abc0m0n0r.ThreePlusOne(std::vector<Index> ({Index::a, Index::e, Index::g, Index::p}));
+  ansatz_kinetic_0abc0m0n0r.SubstituteIndices(Indices ({'b', 'c', 'd', 'f', 'h', 'q'}), Indices ({'a', 'b', 'c', 'm', 'n', 'r'}));
+
+  ansatz_kinetic_0abc0m0n0r.ApplyMonomialSymmetries();
+  ansatz_kinetic_0abc0m0n0r.SortMonomials();
+  ansatz_kinetic_0abc0m0n0r.SortSummands();
+  ansatz_kinetic_0abc0m0n0r.CollectPrefactors();
+  ansatz_kinetic_0abc0m0n0r.CanonicalisePrefactors();
+  ansatz_kinetic_0abc0m0n0r.EliminateZeros();
+  ansatz_kinetic_0abc0m0n0r.SortSummandsByPrefactors();
+
+  Expression EQ_abc_0r_1 ( ansatz_kinetic_0abc0m0n0r );
+  EQ_abc_0r_1.MultiplyOther(E_0m0n0r);
+
+  EQ_abc_0r_1.MultiplyOther(epsilon_xbc);
+  EQ_abc_0r_1.SubstituteFreeIndices(Indices ({'a', 'x'}), Indices ({'a', 'b'}));
+
+  EQ_abc_0r_1.EliminateEpsilonEpsilonI();
+  EQ_abc_0r_1.EliminateGamma();
+  EQ_abc_0r_1.EliminateEpsilon();
+  EQ_abc_0r_1.EliminateTracefree();
+  EQ_abc_0r_1.EliminateZeros();
+  EQ_abc_0r_1.ApplyMonomialSymmetries();
+  EQ_abc_0r_1.SortMonomials();
+  EQ_abc_0r_1.ApplyMonomialSymmetriesToContractions();
+  EQ_abc_0r_1.RenameDummies();
+  EQ_abc_0r_1.SortSummandsByLastFactors();
+  EQ_abc_0r_1.CollectPrefactors();
+  EQ_abc_0r_1.CanonicalisePrefactors();
+
+  EXPECT_EQ("", EQ_abc_0r_1.GetLatexString());
+
+  Expression ansatz_kinetic_0abc0mnp0r (ansatz_kinetic);
+
+  ansatz_kinetic_0abc0mnp0r.ThreePlusOne(std::vector<Index> ({Index::a, Index::e, Index::p}));
+  ansatz_kinetic_0abc0mnp0r.SubstituteIndices(Indices ({'b', 'c', 'd', 'f', 'g', 'h', 'q'}), Indices ({'a', 'b', 'c', 'm', 'n', 'p', 'r'}));
+
+  ansatz_kinetic_0abc0mnp0r.ApplyMonomialSymmetries();
+  ansatz_kinetic_0abc0mnp0r.SortMonomials();
+  ansatz_kinetic_0abc0mnp0r.SortSummands();
+  ansatz_kinetic_0abc0mnp0r.CollectPrefactors();
+  ansatz_kinetic_0abc0mnp0r.CanonicalisePrefactors();
+  ansatz_kinetic_0abc0mnp0r.EliminateZeros();
+  ansatz_kinetic_0abc0mnp0r.SortSummandsByPrefactors();
+
+  Expression EQ_abc_0r_2 ( ansatz_kinetic_0abc0mnp0r );
+  EQ_abc_0r_2.MultiplyOther(E_0mnp0r);
+
+  EQ_abc_0r_2.MultiplyOther(epsilon_xbc);
+  EQ_abc_0r_2.SubstituteFreeIndices(Indices ({'a', 'x'}), Indices ({'a', 'b'}));
+
+  EQ_abc_0r_2.EliminateEpsilonEpsilonI();
+  EQ_abc_0r_2.EliminateGamma();
+  EQ_abc_0r_2.EliminateEpsilon();
+  EQ_abc_0r_2.EliminateTracefree();
+  EQ_abc_0r_2.EliminateZeros();
+  EQ_abc_0r_2.ApplyMonomialSymmetries();
+  EQ_abc_0r_2.SortMonomials();
+  EQ_abc_0r_2.ApplyMonomialSymmetriesToContractions();
+  EQ_abc_0r_2.RenameDummies();
+  EQ_abc_0r_2.SortSummandsByLastFactors();
+  EQ_abc_0r_2.CollectPrefactors();
+  EQ_abc_0r_2.CanonicalisePrefactors();
+
+  EXPECT_EQ("", EQ_abc_0r_2.GetLatexString());
+
+  Expression partial_r_s;
+  partial_r_s.set_dimension(3);
+  partial_r_s.AddSummand(me_partial_r_s, Rational(1,1));
+
+  Expression E_0m0nrs ( E_0m0n );
+  E_0m0nrs.MultiplyOther(partial_r_s);
+
+  Expression E_0mnprs ( E_0mnp );
+  E_0mnprs.MultiplyOther(partial_r_s);
+
+  Expression E_mnpqrs ( E_mnpq );
+  E_mnpqrs.MultiplyOther(partial_r_s);
+
+
+  Expression ansatz_kinetic_abcd0m0nrs (ansatz_kinetic);
+
+  ansatz_kinetic_abcd0m0nrs.ThreePlusOne(std::vector<Index> ({Index::e, Index::g}));
+  ansatz_kinetic_abcd0m0nrs.SubstituteIndices(Indices ({'a', 'b', 'c', 'd', 'f', 'h', 'p', 'q'}), Indices ({'a', 'b', 'c', 'd', 'm', 'n', 'r', 's'}));
+
+  ansatz_kinetic_abcd0m0nrs.ApplyMonomialSymmetries();
+  ansatz_kinetic_abcd0m0nrs.SortMonomials();
+  ansatz_kinetic_abcd0m0nrs.SortSummands();
+  ansatz_kinetic_abcd0m0nrs.CollectPrefactors();
+  ansatz_kinetic_abcd0m0nrs.CanonicalisePrefactors();
+  ansatz_kinetic_abcd0m0nrs.EliminateZeros();
+  ansatz_kinetic_abcd0m0nrs.SortSummandsByPrefactors();
+
+  Expression EQ_abcd_rs_1 ( ansatz_kinetic_abcd0m0nrs );
+  EQ_abcd_rs_1.MultiplyOther(E_0m0nrs);
+
+  EQ_abcd_rs_1.MultiplyOther(epsilon_xab);
+  EQ_abcd_rs_1.MultiplyOther(epsilon_ycd);
+  EQ_abcd_rs_1.SubstituteFreeIndices(Indices ({'x', 'y'}), Indices ({'a', 'b'}));
+
+  EQ_abcd_rs_1.EliminateEpsilonEpsilonI();
+  EQ_abcd_rs_1.EliminateGamma();
+  EQ_abcd_rs_1.EliminateEpsilon();
+  EQ_abcd_rs_1.EliminateTracefree();
+  EQ_abcd_rs_1.EliminateZeros();
+  EQ_abcd_rs_1.ApplyMonomialSymmetries();
+  EQ_abcd_rs_1.SortMonomials();
+  EQ_abcd_rs_1.ApplyMonomialSymmetriesToContractions();
+  EQ_abcd_rs_1.RenameDummies();
+  EQ_abcd_rs_1.SortSummandsByLastFactors();
+  EQ_abcd_rs_1.CollectPrefactors();
+  EQ_abcd_rs_1.CanonicalisePrefactors();
+
+  EXPECT_EQ("", EQ_abcd_rs_1.GetLatexString());
+
+  EQ_abcd_rs_1.ExchangeSymmetrise(Indices ({'a', 'b'}), Indices ({'b', 'a'}), true);
+
+  EQ_abcd_rs_1.ApplyMonomialSymmetries();
+  EQ_abcd_rs_1.SortMonomials();
+  EQ_abcd_rs_1.ApplyMonomialSymmetriesToContractions();
+  EQ_abcd_rs_1.RenameDummies();
+  EQ_abcd_rs_1.SortSummandsByLastFactors();
+  EQ_abcd_rs_1.CollectPrefactors();
+  EQ_abcd_rs_1.CanonicalisePrefactors();
+
+  EXPECT_EQ("0", EQ_abcd_rs_1.GetLatexString());
+
+  Expression ansatz_kinetic_abcd0mnprs (ansatz_kinetic);
+
+  ansatz_kinetic_abcd0mnprs.ThreePlusOne(std::vector<Index> ({Index::e}));
+  ansatz_kinetic_abcd0mnprs.SubstituteIndices(Indices ({'a', 'b', 'c', 'd', 'f', 'g', 'h', 'p', 'q'}), Indices ({'a', 'b', 'c', 'd', 'm', 'n', 'p', 'r', 's'}));
+
+  ansatz_kinetic_abcd0mnprs.ApplyMonomialSymmetries();
+  ansatz_kinetic_abcd0mnprs.SortMonomials();
+  ansatz_kinetic_abcd0mnprs.SortSummands();
+  ansatz_kinetic_abcd0mnprs.CollectPrefactors();
+  ansatz_kinetic_abcd0mnprs.CanonicalisePrefactors();
+  ansatz_kinetic_abcd0mnprs.EliminateZeros();
+  ansatz_kinetic_abcd0mnprs.SortSummandsByPrefactors();
+
+  Expression EQ_abcd_rs_2 ( ansatz_kinetic_abcd0mnprs );
+  EQ_abcd_rs_2.MultiplyOther(E_0mnprs);
+
+  EQ_abcd_rs_2.MultiplyOther(epsilon_xab);
+  EQ_abcd_rs_2.MultiplyOther(epsilon_ycd);
+  EQ_abcd_rs_2.SubstituteFreeIndices(Indices ({'x', 'y'}), Indices ({'a', 'b'}));
+
+  EQ_abcd_rs_2.EliminateEpsilonEpsilonI();
+  EQ_abcd_rs_2.EliminateEpsilonEpsilonI();
+  EQ_abcd_rs_2.EliminateGamma();
+  EQ_abcd_rs_2.EliminateEpsilon();
+  EQ_abcd_rs_2.EliminateTracefree();
+  EQ_abcd_rs_2.EliminateZeros();
+  EQ_abcd_rs_2.ApplyMonomialSymmetries();
+  EQ_abcd_rs_2.SortMonomials();
+  EQ_abcd_rs_2.ApplyMonomialSymmetriesToContractions();
+  EQ_abcd_rs_2.RenameDummies();
+  EQ_abcd_rs_2.SortSummandsByLastFactors();
+  EQ_abcd_rs_2.CollectPrefactors();
+  EQ_abcd_rs_2.CanonicalisePrefactors();
+
+  EXPECT_EQ("", EQ_abcd_rs_2.GetLatexString());
+
+  EQ_abcd_rs_2.ExchangeSymmetrise(Indices ({'a', 'b'}), Indices ({'b', 'a'}), true);
+
+  EQ_abcd_rs_2.ApplyMonomialSymmetries();
+  EQ_abcd_rs_2.SortMonomials();
+  EQ_abcd_rs_2.ApplyMonomialSymmetriesToContractions();
+  EQ_abcd_rs_2.RenameDummies();
+  EQ_abcd_rs_2.SortSummandsByLastFactors();
+  EQ_abcd_rs_2.CollectPrefactors();
+  EQ_abcd_rs_2.CanonicalisePrefactors();
+
+  EXPECT_EQ("0", EQ_abcd_rs_2.GetLatexString());
+
 }

@@ -45,6 +45,7 @@ class MonomialExpression {
   void AddFactorRight(MonomialExpression const & other);
 
   void ExchangeIndices(Indices const & indices1, Indices const & indices2);
+  void ExchangeFreeIndices(Indices const & indices1, Indices const & indices2);
 
   std::vector<Index> GetFreeIndices() const;
   std::vector<Index> GetNonFreeIndices() const;

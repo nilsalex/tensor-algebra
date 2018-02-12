@@ -188,6 +188,7 @@ int main() {
   Expression EQ_ab ( EQ_abcd );
   EQ_ab.MultiplyOther(epsilon_xab);
   EQ_ab.MultiplyOther(epsilon_ycd);
+  EQ_ab.SubstituteFreeIndices(Indices ({'x', 'y'}), Indices ({'a', 'b'}));
 
   EQ_ab.EliminateEpsilonEpsilonI();
   EQ_ab.EliminateGamma();
@@ -283,6 +284,7 @@ int main() {
   Expression EQ_ab_00 ( EQ_abcd_00 );
   EQ_ab_00.MultiplyOther(epsilon_xab);
   EQ_ab_00.MultiplyOther(epsilon_ycd);
+  EQ_ab_00.SubstituteFreeIndices(Indices ({'x', 'y'}), Indices ({'a', 'b'}));
 
   EQ_ab_00.EliminateEpsilonEpsilonI();
   EQ_ab_00.EliminateGamma();
@@ -382,6 +384,7 @@ int main() {
   Expression EQ_ab_0r ( EQ_abcd_0r );
   EQ_ab_0r.MultiplyOther(epsilon_xab);
   EQ_ab_0r.MultiplyOther(epsilon_ycd);
+  EQ_ab_0r.SubstituteFreeIndices(Indices ({'x', 'y'}), Indices ({'a', 'b'}));
 
   EQ_ab_0r.EliminateEpsilonEpsilonI();
   EQ_ab_0r.EliminateGamma();
@@ -481,6 +484,7 @@ int main() {
   Expression EQ_ab_rs ( EQ_abcd_rs );
   EQ_ab_rs.MultiplyOther(epsilon_xab);
   EQ_ab_rs.MultiplyOther(epsilon_ycd);
+  EQ_ab_rs.SubstituteFreeIndices(Indices ({'x', 'y'}), Indices ({'a', 'b'}));
 
   EQ_ab_rs.EliminateEpsilonEpsilonI();
   EQ_ab_rs.EliminateGamma();

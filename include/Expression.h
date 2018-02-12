@@ -53,6 +53,7 @@ class Expression {
   void CollectPrefactors();
   void EliminateVariable(size_t const variable);
   void SubstituteIndices(Indices const & indices_old, Indices const & indices_new);
+  void SubstituteFreeIndices(Indices const & indices_old, Indices const & indices_new);
   void SubstituteVariable(size_t const variable_old, ScalarSum const & scalar_sum_new);
   void SubstituteVariables(std::map<size_t, ScalarSum> substitution_map);
   void EliminateDelta();
