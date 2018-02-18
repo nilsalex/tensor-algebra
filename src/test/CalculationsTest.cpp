@@ -454,7 +454,7 @@ TEST(Calculations, 3plus1) {
   EQ_abc_0r_1.CollectPrefactors();
   EQ_abc_0r_1.CanonicalisePrefactors();
 
-  EXPECT_EQ("", EQ_abc_0r_1.GetLatexString());
+//  EXPECT_EQ("", EQ_abc_0r_1.GetLatexString());
 
   Expression ansatz_kinetic_0abc0mnp0r (ansatz_kinetic);
 
@@ -488,7 +488,7 @@ TEST(Calculations, 3plus1) {
   EQ_abc_0r_2.CollectPrefactors();
   EQ_abc_0r_2.CanonicalisePrefactors();
 
-  EXPECT_EQ("", EQ_abc_0r_2.GetLatexString());
+//  EXPECT_EQ("", EQ_abc_0r_2.GetLatexString());
 
   Expression partial_r_s;
   partial_r_s.set_dimension(3);
@@ -537,7 +537,7 @@ TEST(Calculations, 3plus1) {
   EQ_abcd_rs_1.CollectPrefactors();
   EQ_abcd_rs_1.CanonicalisePrefactors();
 
-  EXPECT_EQ("", EQ_abcd_rs_1.GetLatexString());
+//  EXPECT_EQ("", EQ_abcd_rs_1.GetLatexString());
 
   EQ_abcd_rs_1.ExchangeSymmetrise(Indices ({'a', 'b'}), Indices ({'b', 'a'}), true);
 
@@ -585,7 +585,7 @@ TEST(Calculations, 3plus1) {
   EQ_abcd_rs_2.CollectPrefactors();
   EQ_abcd_rs_2.CanonicalisePrefactors();
 
-  EXPECT_EQ("", EQ_abcd_rs_2.GetLatexString());
+//  EXPECT_EQ("", EQ_abcd_rs_2.GetLatexString());
 
   EQ_abcd_rs_2.ExchangeSymmetrise(Indices ({'a', 'b'}), Indices ({'b', 'a'}), true);
 
@@ -600,54 +600,325 @@ TEST(Calculations, 3plus1) {
   EXPECT_EQ("0", EQ_abcd_rs_2.GetLatexString());
 
 
-  Expression ansatz_kinetic_abcdmnpq0r (ansatz_kinetic);
+  Expression ansatz_kinetic_abcd0mnp0r (ansatz_kinetic);
 
-  ansatz_kinetic_abcdmnpq0r.ThreePlusOne(std::vector<Index> ({Index::p}));
-  ansatz_kinetic_abcdmnpq0r.SubstituteIndices(Indices ({'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'q'}), Indices ({'a', 'b', 'c', 'd', 'm', 'n', 'p', 'q', 'r'}));
+  ansatz_kinetic_abcd0mnp0r.ThreePlusOne(std::vector<Index> ({Index::e, Index::p}));
+  ansatz_kinetic_abcd0mnp0r.SubstituteIndices(Indices ({'a', 'b', 'c', 'd', 'f', 'g', 'h', 'q'}), Indices ({'a', 'b', 'c', 'd', 'm', 'n', 'p', 'r'}));
 
-  ansatz_kinetic_abcdmnpq0r.ApplyMonomialSymmetries();
-  ansatz_kinetic_abcdmnpq0r.SortMonomials();
-  ansatz_kinetic_abcdmnpq0r.SortSummands();
-  ansatz_kinetic_abcdmnpq0r.CollectPrefactors();
-  ansatz_kinetic_abcdmnpq0r.CanonicalisePrefactors();
-  ansatz_kinetic_abcdmnpq0r.EliminateZeros();
-  ansatz_kinetic_abcdmnpq0r.SortSummandsByPrefactors();
+  ansatz_kinetic_abcd0mnp0r.ApplyMonomialSymmetries();
+  ansatz_kinetic_abcd0mnp0r.SortMonomials();
+  ansatz_kinetic_abcd0mnp0r.SortSummands();
+  ansatz_kinetic_abcd0mnp0r.CollectPrefactors();
+  ansatz_kinetic_abcd0mnp0r.CanonicalisePrefactors();
+  ansatz_kinetic_abcd0mnp0r.EliminateZeros();
+  ansatz_kinetic_abcd0mnp0r.SortSummandsByPrefactors();
 
-  Expression EQ_abcd_0r_1 ( ansatz_kinetic_abcdmnpq0r );
-  EXPECT_EQ("", EQ_abcd_0r_1.GetLatexString());
-  EQ_abcd_0r_1.MultiplyOther(E_mnpq0r);
-  EXPECT_EQ("", EQ_abcd_0r_1.GetLatexString());
+  Expression EQ_abcd_0r_2 ( ansatz_kinetic_abcd0mnp0r );
+  EQ_abcd_0r_2.MultiplyOther(E_0mnp0r);
 
-//  EQ_abcd_0r_1.MultiplyOther(epsilon_xab);
-//  EQ_abcd_0r_1.MultiplyOther(epsilon_ycd);
-//  EQ_abcd_0r_1.SubstituteFreeIndices(Indices ({'x', 'y'}), Indices ({'a', 'b'}));
+  EQ_abcd_0r_2.EliminateEpsilonEpsilonI();
+  EQ_abcd_0r_2.EliminateGamma();
+  EQ_abcd_0r_2.EliminateEpsilon();
+  EQ_abcd_0r_2.EliminateTracefree();
+  EQ_abcd_0r_2.EliminateZeros();
+  EQ_abcd_0r_2.ApplyMonomialSymmetries();
+  EQ_abcd_0r_2.SortMonomials();
+  EQ_abcd_0r_2.ApplyMonomialSymmetriesToContractions();
+  EQ_abcd_0r_2.RenameDummies();
+  EQ_abcd_0r_2.SortSummandsByLastFactors();
+  EQ_abcd_0r_2.CollectPrefactors();
+  EQ_abcd_0r_2.CanonicalisePrefactors();
 
-  EQ_abcd_0r_1.EliminateEpsilonEpsilonI();
-  EQ_abcd_0r_1.EliminateGamma();
-  EQ_abcd_0r_1.EliminateEpsilon();
-  EQ_abcd_0r_1.EliminateTracefree();
-  EQ_abcd_0r_1.EliminateZeros();
-  EQ_abcd_0r_1.ApplyMonomialSymmetries();
-  EQ_abcd_0r_1.SortMonomials();
-  EQ_abcd_0r_1.ApplyMonomialSymmetriesToContractions();
-  EQ_abcd_0r_1.RenameDummies();
-  EQ_abcd_0r_1.SortSummandsByLastFactors();
-  EQ_abcd_0r_1.CollectPrefactors();
-  EQ_abcd_0r_1.CanonicalisePrefactors();
+  Expression EQ_abcd_0r_2_sym1 (EQ_abcd_0r_2);
+  EQ_abcd_0r_2_sym1.ExchangeSymmetrise(Indices ({'a', 'b', 'c', 'd'}), Indices ({'b', 'a', 'c', 'd'}), false);
+  EQ_abcd_0r_2_sym1.ApplyMonomialSymmetries();
+  EQ_abcd_0r_2_sym1.SortMonomials();
+  EQ_abcd_0r_2_sym1.ApplyMonomialSymmetriesToContractions();
+  EQ_abcd_0r_2_sym1.RenameDummies();
+  EQ_abcd_0r_2_sym1.SortSummandsByLastFactors();
+  EQ_abcd_0r_2_sym1.CollectPrefactors();
+  EQ_abcd_0r_2_sym1.CanonicalisePrefactors();
+  EXPECT_EQ("0", EQ_abcd_0r_2_sym1.GetLatexString());
 
-  EXPECT_EQ("", EQ_abcd_0r_1.GetLatexString());
-/*
-  EQ_abcd_0r_1.ExchangeSymmetrise(Indices ({'a', 'b'}), Indices ({'b', 'a'}), true);
+  Expression EQ_abcd_0r_2_sym2 (EQ_abcd_0r_2);
+  EQ_abcd_0r_2_sym2.ExchangeSymmetrise(Indices ({'a', 'b', 'c', 'd'}), Indices ({'a', 'b', 'd', 'c'}), false);
+  EQ_abcd_0r_2_sym2.ApplyMonomialSymmetries();
+  EQ_abcd_0r_2_sym2.SortMonomials();
+  EQ_abcd_0r_2_sym2.ApplyMonomialSymmetriesToContractions();
+  EQ_abcd_0r_2_sym2.RenameDummies();
+  EQ_abcd_0r_2_sym2.SortSummandsByLastFactors();
+  EQ_abcd_0r_2_sym2.CollectPrefactors();
+  EQ_abcd_0r_2_sym2.CanonicalisePrefactors();
+  EXPECT_EQ("0", EQ_abcd_0r_2_sym2.GetLatexString());
 
-  EQ_abcd_0r_1.ApplyMonomialSymmetries();
-  EQ_abcd_0r_1.SortMonomials();
-  EQ_abcd_0r_1.ApplyMonomialSymmetriesToContractions();
-  EQ_abcd_0r_1.RenameDummies();
-  EQ_abcd_0r_1.SortSummandsByLastFactors();
-  EQ_abcd_0r_1.CollectPrefactors();
-  EQ_abcd_0r_1.CanonicalisePrefactors();
+  Expression EQ_abcd_0r_2_sym3 (EQ_abcd_0r_2);
+  EQ_abcd_0r_2_sym3.ExchangeSymmetrise(Indices ({'a', 'b', 'c', 'd'}), Indices ({'c', 'd', 'a', 'b'}), true);
+  EQ_abcd_0r_2_sym3.ApplyMonomialSymmetries();
+  EQ_abcd_0r_2_sym3.SortMonomials();
+  EQ_abcd_0r_2_sym3.ApplyMonomialSymmetriesToContractions();
+  EQ_abcd_0r_2_sym3.RenameDummies();
+  EQ_abcd_0r_2_sym3.SortSummandsByLastFactors();
+  EQ_abcd_0r_2_sym3.CollectPrefactors();
+  EQ_abcd_0r_2_sym3.CanonicalisePrefactors();
+  EXPECT_EQ("0", EQ_abcd_0r_2_sym3.GetLatexString());
 
-  EXPECT_EQ("0", EQ_abcd_0r_1.GetLatexString());
-*/
+  EQ_abcd_0r_2.MultiplyOther(epsilon_xab);
+  EQ_abcd_0r_2.MultiplyOther(epsilon_ycd);
+  EQ_abcd_0r_2.SubstituteFreeIndices(Indices ({'x', 'y'}), Indices ({'a', 'b'}));
+
+  EQ_abcd_0r_2.EliminateEpsilonEpsilonI();
+  EQ_abcd_0r_2.EliminateGamma();
+  EQ_abcd_0r_2.EliminateEpsilon();
+  EQ_abcd_0r_2.EliminateTracefree();
+  EQ_abcd_0r_2.EliminateZeros();
+  EQ_abcd_0r_2.ApplyMonomialSymmetries();
+  EQ_abcd_0r_2.SortMonomials();
+  EQ_abcd_0r_2.ApplyMonomialSymmetriesToContractions();
+  EQ_abcd_0r_2.RenameDummies();
+  EQ_abcd_0r_2.SortSummandsByLastFactors();
+  EQ_abcd_0r_2.CollectPrefactors();
+  EQ_abcd_0r_2.CanonicalisePrefactors();
+
+
+//  EXPECT_EQ("", EQ_abcd_0r_2.GetLatexString());
+
+  EQ_abcd_0r_2.ExchangeSymmetrise(Indices ({'a', 'b'}), Indices ({'b', 'a'}), true);
+
+  EQ_abcd_0r_2.ApplyMonomialSymmetries();
+  EQ_abcd_0r_2.SortMonomials();
+  EQ_abcd_0r_2.ApplyMonomialSymmetriesToContractions();
+  EQ_abcd_0r_2.RenameDummies();
+  EQ_abcd_0r_2.SortSummandsByLastFactors();
+  EQ_abcd_0r_2.CollectPrefactors();
+  EQ_abcd_0r_2.CanonicalisePrefactors();
+
+  EXPECT_EQ("0", EQ_abcd_0r_2.GetLatexString());
+
+}
+
+TEST(Calculations, abcd_to_ab) {
+  Tensor epsilon (3, "epsilon");
+  epsilon.SetAntisymmetric();
+
+  Tensor gamma (2, "gamma");
+  gamma.SetSymmetric();
+
+  Tensor partial (1, "partial");
+  Tensor partial_t (0, "partial_t");
+
+  Tensor phi3 (2, "phi3");
+  phi3.SetSymmetric();
+  phi3.SetTracefree();
+
+  std::vector<MonomialExpression> me_vec ({
+    MonomialExpression (TensorMonomial ({epsilon, gamma, partial, partial_t, phi3}), Indices ({Index::d, Index::e, Index::f, Index::b, Index::c, Index::e, Index::a, Index::f})),
+    MonomialExpression (TensorMonomial ({epsilon, gamma, partial, partial_t, phi3}), Indices ({Index::b, Index::e, Index::f, Index::d, Index::a, Index::e, Index::c, Index::f}))
+    });
+
+  std::vector<std::string> expected_strings_1 ({
+"1 epsilon^{ d e f } gamma^{ b c } partial^{ e } partial_t phi3^{ a f } epsilon^{ x a b } epsilon^{ y c d }",
+"1 epsilon^{ b e f } gamma^{ d a } partial^{ e } partial_t phi3^{ c f } epsilon^{ x a b } epsilon^{ y c d }"
+  });
+
+  std::vector<std::string> expected_strings_2 ({
+"1 gamma^{ d y } gamma^{ e c } gamma^{ f d } gamma^{ b c } partial^{ e } partial_t phi3^{ a f } epsilon^{ x a b }\n\
+- 1 gamma^{ d y } gamma^{ e d } gamma^{ f c } gamma^{ b c } partial^{ e } partial_t phi3^{ a f } epsilon^{ x a b }\n\
+- 1 gamma^{ d c } gamma^{ e y } gamma^{ f d } gamma^{ b c } partial^{ e } partial_t phi3^{ a f } epsilon^{ x a b }\n\
++ 1 gamma^{ d c } gamma^{ e d } gamma^{ f y } gamma^{ b c } partial^{ e } partial_t phi3^{ a f } epsilon^{ x a b }\n\
++ 1 gamma^{ d d } gamma^{ e y } gamma^{ f c } gamma^{ b c } partial^{ e } partial_t phi3^{ a f } epsilon^{ x a b }\n\
+- 1 gamma^{ d d } gamma^{ e c } gamma^{ f y } gamma^{ b c } partial^{ e } partial_t phi3^{ a f } epsilon^{ x a b }",
+
+"1 gamma^{ b x } gamma^{ e a } gamma^{ f b } gamma^{ d a } partial^{ e } partial_t phi3^{ c f } epsilon^{ y c d }\n\
+- 1 gamma^{ b x } gamma^{ e b } gamma^{ f a } gamma^{ d a } partial^{ e } partial_t phi3^{ c f } epsilon^{ y c d }\n\
+- 1 gamma^{ b a } gamma^{ e x } gamma^{ f b } gamma^{ d a } partial^{ e } partial_t phi3^{ c f } epsilon^{ y c d }\n\
++ 1 gamma^{ b a } gamma^{ e b } gamma^{ f x } gamma^{ d a } partial^{ e } partial_t phi3^{ c f } epsilon^{ y c d }\n\
++ 1 gamma^{ b b } gamma^{ e x } gamma^{ f a } gamma^{ d a } partial^{ e } partial_t phi3^{ c f } epsilon^{ y c d }\n\
+- 1 gamma^{ b b } gamma^{ e a } gamma^{ f x } gamma^{ d a } partial^{ e } partial_t phi3^{ c f } epsilon^{ y c d }"
+  });
+
+  std::vector<std::string> expected_strings_3 ({
+"1 partial^{ b } partial_t phi3^{ a y } epsilon^{ x a b }\n\
+- 1 partial^{ y } partial_t phi3^{ a b } epsilon^{ x a b }\n\
+- 1 partial^{ y } partial_t phi3^{ a b } epsilon^{ x a b }\n\
++ 1 partial^{ b } partial_t phi3^{ a y } epsilon^{ x a b }\n\
++ 3 partial^{ y } partial_t phi3^{ a b } epsilon^{ x a b }\n\
+- 3 partial^{ b } partial_t phi3^{ a y } epsilon^{ x a b }",
+
+"1 partial^{ d } partial_t phi3^{ c x } epsilon^{ y c d }\n\
+- 1 partial^{ x } partial_t phi3^{ c d } epsilon^{ y c d }\n\
+- 1 partial^{ x } partial_t phi3^{ c d } epsilon^{ y c d }\n\
++ 1 partial^{ d } partial_t phi3^{ c x } epsilon^{ y c d }\n\
++ 3 partial^{ x } partial_t phi3^{ c d } epsilon^{ y c d }\n\
+- 3 partial^{ d } partial_t phi3^{ c x } epsilon^{ y c d }"
+  });
+
+  std::vector<std::string> expected_strings_4 ({
+"1 partial^{ b } partial_t phi3^{ a y } epsilon^{ x a b }\n\
++ 1 partial^{ b } partial_t phi3^{ a y } epsilon^{ x a b }\n\
+- 3 partial^{ b } partial_t phi3^{ a y } epsilon^{ x a b }",
+
+"1 partial^{ d } partial_t phi3^{ c x } epsilon^{ y c d }\n\
++ 1 partial^{ d } partial_t phi3^{ c x } epsilon^{ y c d }\n\
+- 3 partial^{ d } partial_t phi3^{ c x } epsilon^{ y c d }"
+  });
+
+  std::vector<std::string> expected_strings_5 ({
+"1 partial^{ b } partial_t phi3^{ a y } epsilon^{ x a b }\n\
++ 1 partial^{ b } partial_t phi3^{ a y } epsilon^{ x a b }\n\
+- 3 partial^{ b } partial_t phi3^{ a y } epsilon^{ x a b }",
+
+"1 partial^{ d } partial_t phi3^{ c x } epsilon^{ y c d }\n\
++ 1 partial^{ d } partial_t phi3^{ c x } epsilon^{ y c d }\n\
+- 3 partial^{ d } partial_t phi3^{ c x } epsilon^{ y c d }"
+  });
+
+  std::vector<std::string> expected_strings_6 ({
+"- 1 partial^{ a } partial_t phi3^{ b y } epsilon^{ x a b }\n\
+- 1 partial^{ a } partial_t phi3^{ b y } epsilon^{ x a b }\n\
++ 3 partial^{ a } partial_t phi3^{ b y } epsilon^{ x a b }",
+
+"- 1 partial^{ c } partial_t phi3^{ d x } epsilon^{ y c d }\n\
+- 1 partial^{ c } partial_t phi3^{ d x } epsilon^{ y c d }\n\
++ 3 partial^{ c } partial_t phi3^{ d x } epsilon^{ y c d }"
+  });
+
+  std::vector<std::string> expected_strings_7 ({
+"- 1 partial^{ a } partial_t phi3^{ b y } epsilon^{ a b x }\n\
+- 1 partial^{ a } partial_t phi3^{ b y } epsilon^{ a b x }\n\
++ 3 partial^{ a } partial_t phi3^{ b y } epsilon^{ a b x }",
+
+"- 1 partial^{ c } partial_t phi3^{ d x } epsilon^{ c d y }\n\
+- 1 partial^{ c } partial_t phi3^{ d x } epsilon^{ c d y }\n\
++ 3 partial^{ c } partial_t phi3^{ d x } epsilon^{ c d y }"
+  });
+
+  std::vector<std::string> expected_strings_8 ({
+"- 1 epsilon^{ a b x } partial^{ a } partial_t phi3^{ b y }\n\
+- 1 epsilon^{ a b x } partial^{ a } partial_t phi3^{ b y }\n\
++ 3 epsilon^{ a b x } partial^{ a } partial_t phi3^{ b y }",
+
+"- 1 epsilon^{ c d y } partial^{ c } partial_t phi3^{ d x }\n\
+- 1 epsilon^{ c d y } partial^{ c } partial_t phi3^{ d x }\n\
++ 3 epsilon^{ c d y } partial^{ c } partial_t phi3^{ d x }"
+  });
+
+  std::vector<std::string> expected_strings_9 ({
+"- 1 epsilon^{ a b x } partial^{ a } partial_t phi3^{ b y }\n\
+- 1 epsilon^{ a b x } partial^{ a } partial_t phi3^{ b y }\n\
++ 3 epsilon^{ a b x } partial^{ a } partial_t phi3^{ b y }",
+
+"- 1 epsilon^{ a b y } partial^{ a } partial_t phi3^{ b x }\n\
+- 1 epsilon^{ a b y } partial^{ a } partial_t phi3^{ b x }\n\
++ 3 epsilon^{ a b y } partial^{ a } partial_t phi3^{ b x }"
+  });
+
+  std::vector<std::string> expected_strings_10 ({
+"- 1 epsilon^{ a b x } partial^{ a } partial_t phi3^{ b y }\n\
+- 1 epsilon^{ a b x } partial^{ a } partial_t phi3^{ b y }\n\
++ 3 epsilon^{ a b x } partial^{ a } partial_t phi3^{ b y }",
+
+"- 1 epsilon^{ a b y } partial^{ a } partial_t phi3^{ b x }\n\
+- 1 epsilon^{ a b y } partial^{ a } partial_t phi3^{ b x }\n\
++ 3 epsilon^{ a b y } partial^{ a } partial_t phi3^{ b x }"
+  });
+
+  std::vector<std::string> expected_strings_11 ({
+"- 1 epsilon^{ a b x } partial^{ a } partial_t phi3^{ b y }\n\
+- 1 epsilon^{ a b x } partial^{ a } partial_t phi3^{ b y }\n\
++ 3 epsilon^{ a b x } partial^{ a } partial_t phi3^{ b y }",
+
+"- 1 epsilon^{ a b y } partial^{ a } partial_t phi3^{ b x }\n\
+- 1 epsilon^{ a b y } partial^{ a } partial_t phi3^{ b x }\n\
++ 3 epsilon^{ a b y } partial^{ a } partial_t phi3^{ b x }"
+  });
+
+  std::vector<std::string> expected_strings_12 ({
+"- 1 epsilon^{ a b x } partial^{ a } partial_t phi3^{ b y }\n\
+- 1 epsilon^{ a b x } partial^{ a } partial_t phi3^{ b y }\n\
++ 3 epsilon^{ a b x } partial^{ a } partial_t phi3^{ b y }",
+
+"- 1 epsilon^{ a b y } partial^{ a } partial_t phi3^{ b x }\n\
+- 1 epsilon^{ a b y } partial^{ a } partial_t phi3^{ b x }\n\
++ 3 epsilon^{ a b y } partial^{ a } partial_t phi3^{ b x }"
+  });
+
+  std::vector<std::string> expected_strings_13 ({
+"1 epsilon^{ a b x } partial^{ a } partial_t phi3^{ b y }",
+
+"1 epsilon^{ a b y } partial^{ a } partial_t phi3^{ b x }"
+  });
+
+  std::vector<std::string> expected_strings_14 ({
+"1 epsilon^{ a b x } partial^{ a } partial_t phi3^{ b y }",
+
+"1 epsilon^{ a b y } partial^{ a } partial_t phi3^{ b x }"
+  });
+
+  Expression sum;
+
+  for (unsigned int counter = 0; counter < me_vec.size(); ++counter) {
+    Expression expr;
+    expr.AddSummand(me_vec.at(counter), Rational(1, 1));
+    expr.set_dimension(3);
+  
+    MonomialExpression me_epsilon_xab (TensorMonomial ({epsilon}), Indices ({Index::x, Index::a, Index::b}));
+    MonomialExpression me_epsilon_ycd (TensorMonomial ({epsilon}), Indices ({Index::y, Index::c, Index::d}));
+  
+    Expression epsilon_xab;
+    epsilon_xab.AddSummand(me_epsilon_xab, Rational(1, 1));
+  
+    Expression epsilon_ycd;
+    epsilon_ycd.AddSummand(me_epsilon_ycd, Rational(1, 1));
+  
+    expr.MultiplyOther(epsilon_xab);
+    expr.MultiplyOther(epsilon_ycd);
+    EXPECT_EQ(expected_strings_1[counter], expr.GetLatexString());
+  
+    expr.EliminateEpsilonEpsilonI();
+    EXPECT_EQ(expected_strings_2[counter], expr.GetLatexString());
+
+    expr.EliminateGamma();
+    EXPECT_EQ(expected_strings_3[counter], expr.GetLatexString());
+
+    expr.EliminateEpsilon();
+    EXPECT_EQ(expected_strings_4[counter], expr.GetLatexString());
+
+    expr.EliminateTracefree();
+    EXPECT_EQ(expected_strings_5[counter], expr.GetLatexString());
+
+    expr.ApplyMonomialSymmetriesToContractions();
+    EXPECT_EQ(expected_strings_6[counter], expr.GetLatexString());
+
+    expr.ApplyMonomialSymmetries();
+    EXPECT_EQ(expected_strings_7[counter], expr.GetLatexString());
+
+    expr.SortMonomials();
+    EXPECT_EQ(expected_strings_8[counter], expr.GetLatexString());
+
+    expr.RenameDummies();
+    EXPECT_EQ(expected_strings_9[counter], expr.GetLatexString());
+
+    expr.SortMonomials();
+    EXPECT_EQ(expected_strings_10[counter], expr.GetLatexString());
+
+    expr.ApplyMonomialSymmetriesToContractions();
+    EXPECT_EQ(expected_strings_11[counter], expr.GetLatexString());
+
+    expr.SortSummands();
+    EXPECT_EQ(expected_strings_12[counter], expr.GetLatexString());
+
+    expr.CollectPrefactors();
+    EXPECT_EQ(expected_strings_13[counter], expr.GetLatexString());
+
+    expr.CanonicalisePrefactors();
+    EXPECT_EQ(expected_strings_14[counter], expr.GetLatexString());
+
+    sum.AddOther(expr);
+  }
+
+  EXPECT_EQ(
+"1 epsilon^{ a b x } partial^{ a } partial_t phi3^{ b y }\n\
++ 1 epsilon^{ a b y } partial^{ a } partial_t phi3^{ b x }"
+  , sum.GetLatexString());
 
 }

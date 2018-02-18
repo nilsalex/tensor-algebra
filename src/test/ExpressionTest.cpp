@@ -230,9 +230,11 @@ TEST(Expression, EliminateEpsilonEpsilon) {
 
   Indices indices  { 'a', 'b', 'c', 'p', 'q', 'r', 'x' };
   Indices indices2 { 'a', 'b', 'c', 'a', 'b', 'r' };
+  Indices indices3 { 'a', 'b', 'c', 'd', 'e', 'a' };
 
   MonomialExpression me  (tm,  indices);
   MonomialExpression me2 (tm2, indices2);
+  MonomialExpression me3 (tm2, indices3);
 
   Expression expr;
   expr.AddSummand(me);
@@ -242,11 +244,17 @@ TEST(Expression, EliminateEpsilonEpsilon) {
   expr2.AddSummand(me2);
   expr2.ThreePlusOne(std::vector<Index>());
 
+  Expression expr3;
+  expr3.AddSummand(me3);
+  expr3.set_dimension(3);
+
   EXPECT_EQ("1 epsilon^{ a b c } epsilon^{ p q r } xi^{ x }", expr.GetLatexString());
   EXPECT_EQ("1 epsilon^{ a b c } epsilon^{ a b r }", expr2.GetLatexString());
+  EXPECT_EQ("1 epsilon^{ a b c } epsilon^{ d e a }", expr3.GetLatexString());
 
   expr.EliminateEpsilonEpsilonI();
   expr2.EliminateEpsilonEpsilonI();
+  expr3.EliminateEpsilonEpsilonI();
 
   EXPECT_EQ(
 "1 gamma^{ a p } gamma^{ b q } gamma^{ c r } xi^{ x }\n\
@@ -272,7 +280,14 @@ TEST(Expression, EliminateEpsilonEpsilon) {
   expr2.SortSummands();
   expr2.CollectPrefactors();
 
+  expr3.EliminateGamma();
+  expr3.ApplyMonomialSymmetries();
+  expr3.SortMonomials();
+  expr3.SortSummands();
+  expr3.CollectPrefactors();
+
   EXPECT_EQ("2 gamma^{ c r }", expr2.GetLatexString());
+  EXPECT_EQ("1 gamma^{ b d } gamma^{ c e }\n- 1 gamma^{ b e } gamma^{ c d }", expr3.GetLatexString());
 }
 
 TEST(Expression, EliminateEpsilonEpsilonI) {

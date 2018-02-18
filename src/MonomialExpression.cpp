@@ -844,23 +844,38 @@ Status MonomialExpression::EliminateEpsilonI() {
 }
 
 std::pair<Indices, Indices> MonomialExpression::EliminateEpsilonEpsilonI(unsigned int const dimension) {
-  auto it_epsilon = std::find_if(index_mapping->cbegin(), index_mapping->cend(),
-    [dimension](auto const & a) {
-      return (a.second->get_name() == "epsilon" && a.second->IsAntisymmetric() && a.first->size() == dimension);
-    });
-
-  if (it_epsilon == index_mapping->cend()) {
+  if (index_mapping->size() < 2) {
     return std::make_pair(Indices { }, Indices { });
   }
 
-  auto it_epsilonI = std::find_if(index_mapping->cbegin(), index_mapping->cend(),
-    [&it_epsilon,dimension](auto const & a) {
-      return ((&a != &(*it_epsilon)) && a.second->get_name() == (dimension == 4 ? "epsilonI" : "epsilon") && a.second->IsAntisymmetric() && a.first->size() == dimension);
+  std::vector<std::pair<std::vector<IndexMappingEntry>::const_iterator, std::vector<IndexMappingEntry>::const_iterator>> it_epsilon_pairs;
+
+  for (auto it = index_mapping->begin(); it + 1 < index_mapping->end(); ++it) {
+    if (!it->second->IsAntisymmetric() || it->first->size() != dimension || !(it->second->get_name() == "epsilon" || it->second->get_name() == "epsilonI")) {
+      continue;
+    }
+    for (auto it2 = it + 1; it2 < index_mapping->end(); ++it2) {
+      if (!it2->second->IsAntisymmetric() || it2->first->size() != dimension || !(it2->second->get_name() == "epsilon" || it2->second->get_name() == "epsilonI") || (dimension == 4 && it->second->get_name() == it2->second->get_name())) {
+        continue;
+      } else {
+        it_epsilon_pairs.push_back(std::make_pair(it, it2));
+      }
+    }
+  }
+
+  std::sort(it_epsilon_pairs.begin(), it_epsilon_pairs.end(),
+    [] (auto const & a, auto const & b) {
+      unsigned int overlap_a = a.first->first->Overlap(*a.second->first).size(); 
+      unsigned int overlap_b = b.first->first->Overlap(*b.second->first).size(); 
+      return overlap_a < overlap_b;
     });
-  
-  if (it_epsilonI == index_mapping->cend()) {
+
+  if (it_epsilon_pairs.empty()) {
     return std::make_pair(Indices { }, Indices { });
   } else {
+    auto it_epsilon = it_epsilon_pairs.back().first;
+    auto it_epsilonI = it_epsilon_pairs.back().second;
+
     auto epsilon = std::make_pair(std::make_unique<Indices>(*(it_epsilon->first)), std::make_unique<Tensor>(*(it_epsilon->second)));
     auto epsilonI = std::make_pair(std::make_unique<Indices>(*(it_epsilonI->first)), std::make_unique<Tensor>(*(it_epsilonI->second)));
     
