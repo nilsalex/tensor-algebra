@@ -501,5 +501,65 @@ int main() {
 
   std::cout << EQ_ab_rs.GetLatexString() << std::endl;
 
+  Expression EQ_ab_total;
+  EQ_ab_total.set_dimension(3);
+  EQ_ab_total.AddOther(EQ_ab);
+  EQ_ab_total.AddOther(EQ_ab_00);
+  EQ_ab_total.AddOther(EQ_ab_0r);
+  EQ_ab_total.AddOther(EQ_ab_rs);
+
+  MonomialExpression me_epsilon_mab (epsilon, Indices ({'m', 'a', 'b'}));
+  Expression epsilon_mab;
+  epsilon_mab.set_dimension(3);
+  epsilon_mab.AddSummand (me_epsilon_mab, Rational(1, 2));
+  
+  Expression EQ_asym { EQ_ab_total };
+
+  EQ_asym.MultiplyOther(epsilon_mab);
+
+  EQ_asym.EliminateEpsilonEpsilonI();
+  EQ_asym.EliminateGamma();
+  EQ_asym.EliminateEpsilon();
+  EQ_asym.EliminateTracefree();
+  EQ_asym.EliminateZeros();
+  EQ_asym.ApplyMonomialSymmetries();
+  EQ_asym.SortMonomials();
+  EQ_asym.ApplyMonomialSymmetriesToContractions();
+  EQ_asym.RenameDummies();
+  EQ_asym.SortSummandsByLastFactors();
+  EQ_asym.CollectPrefactors();
+  EQ_asym.CanonicalisePrefactors();
+
+  std::cout << "##########################################" << std::endl;
+  std::cout << "############ antisymmetric part ##########" << std::endl;
+
+  std::cout << EQ_asym.GetLatexString() << std::endl;
+
+  MonomialExpression me_gamma_ab (gamma, Indices ({'a', 'b'}));
+  Expression gamma_ab;
+  gamma_ab.set_dimension(3);
+  gamma_ab.AddSummand (me_gamma_ab, Rational(1, 3));
+
+  Expression EQ_trace { EQ_ab_total };
+
+  EQ_trace.MultiplyOther(gamma_ab);
+
+  EQ_trace.EliminateGamma();
+  EQ_trace.EliminateEpsilon();
+  EQ_trace.EliminateTracefree();
+  EQ_trace.EliminateZeros();
+  EQ_trace.ApplyMonomialSymmetries();
+  EQ_trace.SortMonomials();
+  EQ_trace.ApplyMonomialSymmetriesToContractions();
+  EQ_trace.RenameDummies();
+  EQ_trace.SortSummandsByLastFactors();
+  EQ_trace.CollectPrefactors();
+  EQ_trace.CanonicalisePrefactors();
+
+  std::cout << "##########################################" << std::endl;
+  std::cout << "############ trace part ##########" << std::endl;
+
+  std::cout << EQ_trace.GetLatexString() << std::endl;
+
   return 0;
 }
