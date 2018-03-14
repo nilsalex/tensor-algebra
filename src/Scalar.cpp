@@ -54,6 +54,21 @@ void Scalar::DivideCoefficient(Rational const & coeff) { coefficient = coefficie
 void Scalar::DivideByTwo() { coefficient.DivideByTwo(); }
 void Scalar::Negate() { coefficient.Negate(); }
 
+void Scalar::SubstituteVariables (std::map<size_t, size_t> const & substitution_map) {
+  std::multiset<size_t> variables_new;
+  std::for_each(variables.begin(), variables.end(),
+    [&substitution_map,&variables_new] (auto & a) mutable {
+      auto find_it = substitution_map.find(a);
+      if (find_it != substitution_map.end()) {
+        variables_new.insert(find_it->second);
+      } else {
+        variables_new.insert(a);
+      }
+    });
+
+  std::swap(variables_new, variables);
+}
+
 Scalar Scalar::MultiplyOther(Scalar const & other) const {
   Scalar ret (*this);
   ret.MultiplyCoefficient(other.coefficient);

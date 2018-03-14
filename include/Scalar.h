@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <map>
 #include <set>
 #include <string>
 
@@ -43,6 +44,8 @@ class Scalar {
 
   void MultiplyCoefficient(Rational const & coeff);
   void DivideCoefficient(Rational const & coeff);
+
+  void SubstituteVariables (std::map<size_t, size_t> const & substitution_map);
 
   Scalar MultiplyOther(Scalar const & other) const;
 

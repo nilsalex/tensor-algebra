@@ -86,8 +86,8 @@ Expression Expression::ApplyGaugeSymmetry(Expression const & delta) const {
       sum_set.insert(*a.second);
     });
 
-  std::map<size_t, size_t> coefficient_map;
-  std::for_each(coefficient_set.begin(), coefficient_set.end(), [n=0,&coefficient_map](auto a) mutable { coefficient_map[a] = n++; });
+
+  std::map<size_t, size_t> coefficient_map = GetCoefficientMap();
 
   std::cout << "number of different (not necessarily linear independent) equations : " << sum_set.size() << std::endl;
   std::cout << "number of coefficients (e_.) in these equations                    : " << coefficient_map.size() << std::endl;

@@ -47,6 +47,10 @@ class Expression {
   void AddSummand (MonomialExpression const & monomial_expression, Scalar const & scalar);
   void AddSummand (MonomialExpression const & monomial_expression, ScalarSum const & scalar_sum);
 
+  std::set<size_t> GetVariableSet () const;
+  std::map<size_t, size_t> GetCoefficientMap () const;
+  std::vector<std::vector<Rational>> GetPrefactorMatrix () const;
+
   void ApplyMonomialSymmetries();
   void ApplyMonomialSymmetriesToContractions();
   void CanonicalisePrefactors();
@@ -56,6 +60,7 @@ class Expression {
   void SubstituteFreeIndices(Indices const & indices_old, Indices const & indices_new);
   void SubstituteVariable(size_t const variable_old, ScalarSum const & scalar_sum_new);
   void SubstituteVariables(std::map<size_t, ScalarSum> substitution_map);
+  void SubstituteVariables(std::map<size_t, size_t> substitution_map);
   void EliminateDelta();
   void EliminateEpsilon();
   void EliminateEpsilonEpsilonI();

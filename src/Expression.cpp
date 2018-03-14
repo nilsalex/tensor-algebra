@@ -4,6 +4,9 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 
+#include <Eigen/Dense>
+#include "gmpxx.h"
+
 #include "Expression.h"
 #include "MonomialExpression.h"
 #include "Scalar.h"
@@ -21,6 +24,8 @@ void Expression::serialize(Archive & ar, unsigned int const version) {
 
 template void Expression::serialize<boost::archive::text_oarchive>(boost::archive::text_oarchive&, unsigned int const);
 template void Expression::serialize<boost::archive::text_iarchive>(boost::archive::text_iarchive&, unsigned int const);
+
+typedef Eigen::Matrix<mpq_class, Eigen::Dynamic, Eigen::Dynamic> MatrixXq;
 
 Expression::Expression() : dimension(4), summands(std::make_unique<std::vector<Summand>>()) { }
 
@@ -71,6 +76,40 @@ void Expression::AddSummand (MonomialExpression const & monomial_expression, siz
 
 void Expression::AddSummand (MonomialExpression const & monomial_expression, Rational const & rational, size_t variable) {
   AddSummand(monomial_expression, Scalar(rational, variable));
+}
+
+std::set<size_t> Expression::GetVariableSet () const {
+  std::set<size_t> ret;
+  std::for_each(summands->cbegin(), summands->cend(),
+    [&ret] (auto const & summand) {
+      ret.merge(summand.second->CoefficientSet());
+    });
+
+  return ret;
+}
+
+std::map<size_t, size_t> Expression::GetCoefficientMap () const {
+  std::set<size_t> variables = GetVariableSet ();
+
+  std::map<size_t, size_t> coefficient_map;
+  std::for_each(variables.cbegin(), variables.cend(), [&coefficient_map,n=0] (auto const & a) mutable { coefficient_map[a] = n++; });
+
+  return coefficient_map;
+}
+
+std::vector<std::vector<Rational>> Expression::GetPrefactorMatrix () const {
+  std::map<size_t, size_t> coefficient_map = GetCoefficientMap ();
+
+  std::vector<std::vector<Rational>> prefactor_matrix;
+  std::for_each(summands->cbegin(), summands->cend(),
+    [&prefactor_matrix, &coefficient_map] (auto const & summand) {
+      prefactor_matrix.push_back(summand.second->CoefficientVector(coefficient_map));
+    });
+
+  std::sort(prefactor_matrix.begin(), prefactor_matrix.end());
+  prefactor_matrix.erase(std::unique(prefactor_matrix.begin(), prefactor_matrix.end()), prefactor_matrix.end());
+
+  return prefactor_matrix;
 }
 
 void Expression::SortMonomials() {
@@ -451,6 +490,13 @@ void Expression::SubstituteVariables(std::map<size_t, ScalarSum> substitution_ma
     });
 }
 
+void Expression::SubstituteVariables(std::map<size_t, size_t> substitution_map) {
+  std::for_each(summands->begin(), summands->end(),
+    [substitution_map](auto & a) {
+      a.second->SubstituteVariables(substitution_map);
+    });
+}
+
 void Expression::EliminateVariable(size_t const variable) {
   std::for_each(summands->begin(), summands->end(), [variable](auto & a) { a.second->EliminateVariable(variable); });
 }
@@ -539,6 +585,57 @@ void Expression::RedefineScalars() {
     return;
   }
 
+  std::map<size_t, size_t> coefficient_map = GetCoefficientMap ();
+  std::vector<std::vector<Rational>> prefactor_matrix = GetPrefactorMatrix ();
+
+  MatrixXq mq(prefactor_matrix.size(), prefactor_matrix.front().size());
+
+  for (size_t row_counter = 0; row_counter < prefactor_matrix.size(); ++row_counter) {
+    for (size_t column_counter = 0; column_counter < prefactor_matrix.front().size(); ++column_counter) {
+      Fraction frac = prefactor_matrix[row_counter][column_counter].get_fraction();
+      mq(row_counter, column_counter) = mpq_class(frac.first, frac.second);
+    }
+  }
+
+  Eigen::FullPivLU<MatrixXq> lu_decompq(mq);
+
+  MatrixXq kq = lu_decompq.kernel();
+
+  std::set<size_t> coeff_removed; 
+
+  for (int column_counter = 0; column_counter < kq.cols(); ++column_counter) {
+    for (int row_counter = kq.rows() - 1; row_counter >= 0; --row_counter) {
+      if (kq(row_counter, column_counter) == 0 ) {
+        continue;
+      } else if (std::find(coeff_removed.begin(), coeff_removed.end(), row_counter) != coeff_removed.end()) {
+        continue;
+      } else {
+        coeff_removed.insert(row_counter);
+        break;
+      }
+    }
+  }
+
+  std::map<size_t, size_t> coefficient_rmap;
+  std::for_each(coefficient_map.begin(), coefficient_map.end(), [&coefficient_rmap](auto a) { coefficient_rmap.insert(std::make_pair(a.second, a.first)); });
+
+  Expression ret (*this);
+  std::for_each(coeff_removed.begin(), coeff_removed.end(), [&ret, &coefficient_rmap, this] (auto a) { EliminateVariable(coefficient_rmap.at(a)); });
+
+  CanonicalisePrefactors();
+
+  std::map<size_t, size_t> substitution_map;
+
+  std::for_each(coefficient_map.cbegin(), coefficient_map.cend(),
+    [&substitution_map,&coeff_removed,n=1] (auto const & a) mutable {
+      if (coeff_removed.find(a.first) == coeff_removed.end()) {
+        substitution_map[a.first] = n++;
+      }
+    });
+  
+  SubstituteVariables(substitution_map);
+
+/*
   auto summands_new = std::make_unique<Sum>();
   summands_new->push_back(std::make_pair(std::make_unique<MonomialExpression>(), std::make_unique<ScalarSum>(Scalar(1))));
   std::swap(summands->front().first, summands_new->back().first);
@@ -560,6 +657,7 @@ void Expression::RedefineScalars() {
   }
 
   std::swap(summands, summands_new);
+*/
 }
 
 void Expression::RenameDummies() {

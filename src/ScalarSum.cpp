@@ -66,13 +66,10 @@ std::string ScalarSum::ToString(std::string base_name, bool plus_sign) const {
 }
 
 void ScalarSum::EliminateVariable(size_t const variable) {
-  std::for_each(scalars->begin(), scalars->end(),
-    [variable](auto & a) {
-      if (a->VariableNumber() == variable) {
-        a->MultiplyCoefficient(Rational(0, 1));
-      }
-    }
-  );
+  scalars->erase(std::remove_if(scalars->begin(), scalars->end(),
+    [variable] (auto const & a) {
+      return a->VariableNumber() == variable;
+    }), scalars->end());
 }
 
 void ScalarSum::SubstituteVariable(size_t const variable, ScalarSum const & scalar_sum_new) {
@@ -123,6 +120,13 @@ void ScalarSum::SubstituteVariables(std::map<size_t, ScalarSum> substitution_map
       scalar_sum_new.MergeWithOther(substituted);
     });
   std::swap(scalars, scalar_sum_new.scalars);
+}
+
+void ScalarSum::SubstituteVariables(std::map<size_t, size_t> const & substitution_map) {
+  std::for_each(scalars->begin(), scalars->end(),
+    [&substitution_map] (auto & a) {
+      a->SubstituteVariables(substitution_map);
+    });
 }
 
 void ScalarSum::Sort() {

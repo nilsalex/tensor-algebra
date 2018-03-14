@@ -66,6 +66,135 @@ int main () {
       std::cout << "Simplified ansatz without numerical linear dependencies (loaded from savefile):" << std::endl;
       std::cout << simplified->GetLatexString() << std::endl;
 
+      Expression simplified_diff;
+
+      {
+        Expression expr_tmp (*simplified);
+        expr_tmp.SubstituteFreeIndices(Indices ({'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'p', 'q'}),
+                                       Indices ({'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'p', 'q'}));
+        expr_tmp.MultiplyCoefficient(Rational(1, 1));
+        simplified_diff.AddOther(expr_tmp);
+      }
+
+      {
+        Expression expr_tmp (*simplified);
+        expr_tmp.SubstituteFreeIndices(Indices ({'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'p', 'q'}),
+                                       Indices ({'a', 'b', 'd', 'c', 'e', 'f', 'g', 'h', 'p', 'q'}));
+        expr_tmp.MultiplyCoefficient(Rational(-1, 1));
+        simplified_diff.AddOther(expr_tmp);
+      }
+
+      {
+        Expression expr_tmp (*simplified);
+        expr_tmp.SubstituteFreeIndices(Indices ({'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'p', 'q'}),
+                                       Indices ({'a', 'c', 'b', 'd', 'e', 'f', 'g', 'h', 'p', 'q'}));
+        expr_tmp.MultiplyCoefficient(Rational(-1, 1));
+        simplified_diff.AddOther(expr_tmp);
+      }
+
+      {
+        Expression expr_tmp (*simplified);
+        expr_tmp.SubstituteFreeIndices(Indices ({'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'p', 'q'}),
+                                       Indices ({'a', 'c', 'd', 'b', 'e', 'f', 'g', 'h', 'p', 'q'}));
+        expr_tmp.MultiplyCoefficient(Rational(1, 1));
+        simplified_diff.AddOther(expr_tmp);
+      }
+
+      {
+        Expression expr_tmp (*simplified);
+        expr_tmp.SubstituteFreeIndices(Indices ({'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'p', 'q'}),
+                                       Indices ({'a', 'd', 'b', 'c', 'e', 'f', 'g', 'h', 'p', 'q'}));
+        expr_tmp.MultiplyCoefficient(Rational(1, 1));
+        simplified_diff.AddOther(expr_tmp);
+      }
+
+      {
+        Expression expr_tmp (*simplified);
+        expr_tmp.SubstituteFreeIndices(Indices ({'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'p', 'q'}),
+                                       Indices ({'a', 'd', 'c', 'b', 'e', 'f', 'g', 'h', 'p', 'q'}));
+        expr_tmp.MultiplyCoefficient(Rational(-1, 1));
+        simplified_diff.AddOther(expr_tmp);
+      }
+
+      simplified_diff.MultiplyCoefficient(Rational(-1, 6));
+
+      Expression simplified_new_int(*simplified);
+      simplified_new_int.AddOther(simplified_diff);
+
+      Expression simplified_diff_2;
+
+      {
+        Expression expr_tmp (simplified_new_int);
+        expr_tmp.SubstituteFreeIndices(Indices ({'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'p', 'q'}),
+                                       Indices ({'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'p', 'q'}));
+        expr_tmp.MultiplyCoefficient(Rational(1, 1));
+        simplified_diff_2.AddOther(expr_tmp);
+      }
+
+      {
+        Expression expr_tmp (simplified_new_int);
+        expr_tmp.SubstituteFreeIndices(Indices ({'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'p', 'q'}),
+                                       Indices ({'a', 'b', 'c', 'd', 'e', 'f', 'h', 'g', 'p', 'q'}));
+        expr_tmp.MultiplyCoefficient(Rational(-1, 1));
+        simplified_diff_2.AddOther(expr_tmp);
+      }
+
+      {
+        Expression expr_tmp (simplified_new_int);
+        expr_tmp.SubstituteFreeIndices(Indices ({'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'p', 'q'}),
+                                       Indices ({'a', 'b', 'c', 'd', 'e', 'g', 'f', 'h', 'p', 'q'}));
+        expr_tmp.MultiplyCoefficient(Rational(-1, 1));
+        simplified_diff_2.AddOther(expr_tmp);
+      }
+
+      {
+        Expression expr_tmp (simplified_new_int);
+        expr_tmp.SubstituteFreeIndices(Indices ({'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'p', 'q'}),
+                                       Indices ({'a', 'b', 'c', 'd', 'e', 'g', 'h', 'f', 'p', 'q'}));
+        expr_tmp.MultiplyCoefficient(Rational(1, 1));
+        simplified_diff_2.AddOther(expr_tmp);
+      }
+
+      {
+        Expression expr_tmp (simplified_new_int);
+        expr_tmp.SubstituteFreeIndices(Indices ({'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'p', 'q'}),
+                                       Indices ({'a', 'b', 'c', 'd', 'e', 'h', 'f', 'g', 'p', 'q'}));
+        expr_tmp.MultiplyCoefficient(Rational(1, 1));
+        simplified_diff_2.AddOther(expr_tmp);
+      }
+
+      {
+        Expression expr_tmp (simplified_new_int);
+        expr_tmp.SubstituteFreeIndices(Indices ({'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'p', 'q'}),
+                                       Indices ({'a', 'b', 'c', 'd', 'e', 'h', 'g', 'f', 'p', 'q'}));
+        expr_tmp.MultiplyCoefficient(Rational(-1, 1));
+        simplified_diff_2.AddOther(expr_tmp);
+      }
+
+      simplified_diff_2.MultiplyCoefficient(Rational(-1, 6));
+
+      Expression simplified_new(simplified_new_int);
+      simplified_new.AddOther(simplified_diff_2);
+
+      simplified_new.ApplyMonomialSymmetries();
+      simplified_new.SortMonomials();
+      simplified_new.SortSummands();
+      simplified_new.CollectPrefactors();
+      simplified_new.CanonicalisePrefactors();
+      simplified_new.EliminateZeros();
+
+      std::cout << "########################################################################" << std::endl;
+      std::cout << "cyclic part of simplified ansatz:" << std::endl;
+
+      std::cout << simplified_new.GetLatexString() << std::endl;
+
+      simplified_new.RedefineScalars();
+
+      std::cout << "########################################################################" << std::endl;
+      std::cout << "cyclic part of simplified ansatz, redefined variables:" << std::endl;
+
+      std::cout << simplified_new.GetLatexString() << std::endl;
+
       Indices indices_delta   {'e', 'g', 'f', 'p', 'q', 'h'};
       Indices indices_delta2  {'e', 'g', 'h', 'p', 'q', 'f'};
 
@@ -97,7 +226,7 @@ int main () {
       delta.AddSummand(delta_me, Rational(8, 1));
       delta.ExchangeSymmetrise(indices_delta, indices_delta2, false);
 
-      auto new_expr = std::unique_ptr<Expression>(new Expression(simplified->ApplyGaugeSymmetry(delta)));
+      auto new_expr = std::unique_ptr<Expression>(new Expression(simplified_new.ApplyGaugeSymmetry(delta)));
       std::swap(new_expr, final_expr_kinetic);
   }
   {
@@ -149,6 +278,135 @@ int main () {
       std::cout << "Simplified ansatz without numerical linear dependencies (loaded from savefile):" << std::endl;
       std::cout << simplified->GetLatexString() << std::endl;
 
+      Expression simplified_diff;
+
+      {
+        Expression expr_tmp (*simplified);
+        expr_tmp.SubstituteFreeIndices(Indices ({'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'}),
+                                       Indices ({'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'}));
+        expr_tmp.MultiplyCoefficient(Rational(1, 1));
+        simplified_diff.AddOther(expr_tmp);
+      }
+
+      {
+        Expression expr_tmp (*simplified);
+        expr_tmp.SubstituteFreeIndices(Indices ({'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'}),
+                                       Indices ({'a', 'b', 'd', 'c', 'e', 'f', 'g', 'h'}));
+        expr_tmp.MultiplyCoefficient(Rational(-1, 1));
+        simplified_diff.AddOther(expr_tmp);
+      }
+
+      {
+        Expression expr_tmp (*simplified);
+        expr_tmp.SubstituteFreeIndices(Indices ({'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'}),
+                                       Indices ({'a', 'c', 'b', 'd', 'e', 'f', 'g', 'h'}));
+        expr_tmp.MultiplyCoefficient(Rational(-1, 1));
+        simplified_diff.AddOther(expr_tmp);
+      }
+
+      {
+        Expression expr_tmp (*simplified);
+        expr_tmp.SubstituteFreeIndices(Indices ({'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'}),
+                                       Indices ({'a', 'c', 'd', 'b', 'e', 'f', 'g', 'h'}));
+        expr_tmp.MultiplyCoefficient(Rational(1, 1));
+        simplified_diff.AddOther(expr_tmp);
+      }
+
+      {
+        Expression expr_tmp (*simplified);
+        expr_tmp.SubstituteFreeIndices(Indices ({'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'}),
+                                       Indices ({'a', 'd', 'b', 'c', 'e', 'f', 'g', 'h'}));
+        expr_tmp.MultiplyCoefficient(Rational(1, 1));
+        simplified_diff.AddOther(expr_tmp);
+      }
+
+      {
+        Expression expr_tmp (*simplified);
+        expr_tmp.SubstituteFreeIndices(Indices ({'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'}),
+                                       Indices ({'a', 'd', 'c', 'b', 'e', 'f', 'g', 'h'}));
+        expr_tmp.MultiplyCoefficient(Rational(-1, 1));
+        simplified_diff.AddOther(expr_tmp);
+      }
+
+      simplified_diff.MultiplyCoefficient(Rational(-1, 6));
+
+      Expression simplified_new_int(*simplified);
+      simplified_new_int.AddOther(simplified_diff);
+
+      Expression simplified_diff_2;
+
+      {
+        Expression expr_tmp (simplified_new_int);
+        expr_tmp.SubstituteFreeIndices(Indices ({'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'}),
+                                       Indices ({'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'}));
+        expr_tmp.MultiplyCoefficient(Rational(1, 1));
+        simplified_diff_2.AddOther(expr_tmp);
+      }
+
+      {
+        Expression expr_tmp (simplified_new_int);
+        expr_tmp.SubstituteFreeIndices(Indices ({'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'}),
+                                       Indices ({'a', 'b', 'c', 'd', 'e', 'f', 'h', 'g'}));
+        expr_tmp.MultiplyCoefficient(Rational(-1, 1));
+        simplified_diff_2.AddOther(expr_tmp);
+      }
+
+      {
+        Expression expr_tmp (simplified_new_int);
+        expr_tmp.SubstituteFreeIndices(Indices ({'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'}),
+                                       Indices ({'a', 'b', 'c', 'd', 'e', 'g', 'f', 'h'}));
+        expr_tmp.MultiplyCoefficient(Rational(-1, 1));
+        simplified_diff_2.AddOther(expr_tmp);
+      }
+
+      {
+        Expression expr_tmp (simplified_new_int);
+        expr_tmp.SubstituteFreeIndices(Indices ({'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'}),
+                                       Indices ({'a', 'b', 'c', 'd', 'e', 'g', 'h', 'f'}));
+        expr_tmp.MultiplyCoefficient(Rational(1, 1));
+        simplified_diff_2.AddOther(expr_tmp);
+      }
+
+      {
+        Expression expr_tmp (simplified_new_int);
+        expr_tmp.SubstituteFreeIndices(Indices ({'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'}),
+                                       Indices ({'a', 'b', 'c', 'd', 'e', 'h', 'f', 'g'}));
+        expr_tmp.MultiplyCoefficient(Rational(1, 1));
+        simplified_diff_2.AddOther(expr_tmp);
+      }
+
+      {
+        Expression expr_tmp (simplified_new_int);
+        expr_tmp.SubstituteFreeIndices(Indices ({'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'}),
+                                       Indices ({'a', 'b', 'c', 'd', 'e', 'h', 'g', 'f'}));
+        expr_tmp.MultiplyCoefficient(Rational(-1, 1));
+        simplified_diff_2.AddOther(expr_tmp);
+      }
+
+      simplified_diff_2.MultiplyCoefficient(Rational(-1, 6));
+
+      Expression simplified_new(simplified_new_int);
+      simplified_new.AddOther(simplified_diff_2);
+
+      simplified_new.ApplyMonomialSymmetries();
+      simplified_new.SortMonomials();
+      simplified_new.SortSummands();
+      simplified_new.CollectPrefactors();
+      simplified_new.CanonicalisePrefactors();
+      simplified_new.EliminateZeros();
+
+      std::cout << "########################################################################" << std::endl;
+      std::cout << "cyclic part of simplified ansatz:" << std::endl;
+
+      std::cout << simplified_new.GetLatexString() << std::endl;
+
+      simplified_new.RedefineScalars();
+
+      std::cout << "########################################################################" << std::endl;
+      std::cout << "cyclic part of simplified ansatz, redefined variables:" << std::endl;
+
+      std::cout << simplified_new.GetLatexString() << std::endl;
+
       Indices indices_delta   {'e', 'g', 'f', 'h'};
       Indices indices_delta2  {'e', 'g', 'h', 'f'};
 
@@ -179,7 +437,7 @@ int main () {
     
       delta.ExchangeSymmetrise(indices_delta, indices_delta2, false);
 
-      auto new_expr = std::unique_ptr<Expression>(new Expression(simplified->ApplyGaugeSymmetry(delta)));
+      auto new_expr = std::unique_ptr<Expression>(new Expression(simplified_new.ApplyGaugeSymmetry(delta)));
       std::swap(new_expr, final_expr_mass);
   }
 

@@ -39,6 +39,7 @@ class ScalarSum {
   void EliminateVariable(size_t const variable);
   void SubstituteVariable(size_t const variable, ScalarSum const & scalar_sum_new);
   void SubstituteVariables(std::map<size_t, ScalarSum> substitution_map);
+  void SubstituteVariables(std::map<size_t, size_t> const & substitution_map);
   void MergeWithOther(ScalarSum const & other);
   void Sort();
   void Collect();
