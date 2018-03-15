@@ -40,13 +40,14 @@ int main () {
     
       Expression expr ( gtor.Generate() );
     
-      std::cout << "Tensor ansatz:" << std::endl;
-      std::cout << expr.GetLatexString() << std::endl;
+//      std::cout << "Tensor ansatz:" << std::endl;
+//      std::cout << expr.GetLatexString() << std::endl;
     
-      std::cout << "Generating all linear equations by evaluating indices (this may take some time!) ..." << std::endl;
-      auto new_expr = std::unique_ptr<Expression>(new Expression(expr.NumericSimplify(indices, true)));
-  }
+      Expression simplified = expr.NumericSimplify(indices, true);
 
+      std::cout << simplified.GetLatexString() << std::endl;
+  }
+/*
     std::cout << " #### mass term ####" << std::endl;
 
   {
@@ -72,14 +73,12 @@ int main () {
     
       Expression expr ( gtor.Generate() );
     
-      std::cout << "Tensor ansatz:" << std::endl;
-      std::cout << expr.GetLatexString() << std::endl;
+//      std::cout << "Tensor ansatz:" << std::endl;
+//      std::cout << expr.GetLatexString() << std::endl;
     
-      std::cout << "Generating all linear equations by evaluating indices (this may take some time!) ..." << std::endl;
-
-      auto new_expr = std::unique_ptr<Expression>(new Expression(expr.NumericSimplify(indices, true)));
+      Expression simplified = expr.NumericSimplify(indices, true);
   }
-  
+*/  
 
   return 0;
 }

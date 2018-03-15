@@ -586,6 +586,7 @@ void Expression::RedefineScalars() {
   }
 
   std::map<size_t, size_t> coefficient_map = GetCoefficientMap ();
+
   std::vector<std::vector<Rational>> prefactor_matrix = GetPrefactorMatrix ();
 
   MatrixXq mq(prefactor_matrix.size(), prefactor_matrix.front().size());
@@ -620,7 +621,7 @@ void Expression::RedefineScalars() {
   std::for_each(coefficient_map.begin(), coefficient_map.end(), [&coefficient_rmap](auto a) { coefficient_rmap.insert(std::make_pair(a.second, a.first)); });
 
   Expression ret (*this);
-  std::for_each(coeff_removed.begin(), coeff_removed.end(), [&ret, &coefficient_rmap, this] (auto a) { EliminateVariable(coefficient_rmap.at(a)); });
+  std::for_each(coeff_removed.cbegin(), coeff_removed.cend(), [&ret, &coefficient_rmap, this] (auto a) { EliminateVariable(coefficient_rmap.at(a)); });
 
   CanonicalisePrefactors();
 
@@ -628,7 +629,7 @@ void Expression::RedefineScalars() {
 
   std::for_each(coefficient_map.cbegin(), coefficient_map.cend(),
     [&substitution_map,&coeff_removed,n=1] (auto const & a) mutable {
-      if (coeff_removed.find(a.first) == coeff_removed.end()) {
+      if (coeff_removed.find(a.second) == coeff_removed.end()) {
         substitution_map[a.first] = n++;
       }
     });
