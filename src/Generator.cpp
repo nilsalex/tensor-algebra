@@ -9,7 +9,14 @@
 #include "NextCombination.h"
 #include "TensorMonomial.h"
 
-Generator::Generator(Indices const & indices_set, std::initializer_list<std::pair<Indices, bool>> const & symmetries_set) : indices(indices_set), symmetries(symmetries_set) {
+Generator::Generator(Indices const & indices_set, std::initializer_list<std::pair<Indices, bool>> const & symmetries_set) : indices(indices_set), symmetries(symmetries_set), functions() {
+  eta = Tensor(2, "eta");
+  epsilon = Tensor(4, "epsilon");
+  eta.SetSymmetric();
+  epsilon.SetAntisymmetric();
+}
+
+Generator::Generator(Indices const & indices_set, std::initializer_list<std::pair<Indices, bool>> const & symmetries_set, std::initializer_list<std::function<void (Expression &)>> const & fun_set) : indices(indices_set), symmetries(symmetries_set), functions(fun_set) {
   eta = Tensor(2, "eta");
   epsilon = Tensor(4, "epsilon");
   eta.SetSymmetric();
@@ -79,6 +86,17 @@ Expression Generator::Generate() {
       expression->EliminateZeros();
     });
 
+  std::for_each(functions.cbegin(), functions.cend(),
+    [&expression] (auto const & fun) {
+      fun(*expression);
+      expression->ApplyMonomialSymmetries();
+      expression->SortMonomials();
+      expression->SortSummands();
+      expression->CollectPrefactors();
+      expression->CanonicalisePrefactors();
+      expression->EliminateZeros();
+    });
+      
   expression->SortSummandsByPrefactors();
   expression->RedefineScalars();
 

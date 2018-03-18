@@ -188,6 +188,7 @@ int main () {
 
       std::cout << simplified_new.GetLatexString() << std::endl;
 
+      simplified_new.SortSummandsByPrefactors();
       simplified_new.RedefineScalars();
 
       std::cout << "########################################################################" << std::endl;
@@ -400,6 +401,7 @@ int main () {
 
       std::cout << simplified_new.GetLatexString() << std::endl;
 
+      simplified_new.SortSummandsByPrefactors();
       simplified_new.RedefineScalars();
 
       std::cout << "########################################################################" << std::endl;
