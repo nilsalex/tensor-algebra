@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.9)
 
-#set(CMAKE_BUILD_TYPE Debug)
-set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_BUILD_TYPE Debug)
+#set(CMAKE_BUILD_TYPE Release)
 
 # Download and unpack googletest at configure time
 configure_file(CMakeLists.txt.in googletest-download/CMakeLists.txt)
@@ -24,6 +24,9 @@ add_subdirectory(${CMAKE_BINARY_DIR}/googletest-src
 enable_testing()
 
 project(tensor-algebra)
+
+set(CMAKE_BUILD_TYPE Debug)
+#set(CMAKE_BUILD_TYPE Release)
 
 set(CMAKE_CXX_STANDARD 17)
 
