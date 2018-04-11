@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.9)
 
-set(CMAKE_BUILD_TYPE Debug)
-#set(CMAKE_BUILD_TYPE Release)
+#set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE Release)
 
 # Download and unpack googletest at configure time
 configure_file(CMakeLists.txt.in googletest-download/CMakeLists.txt)
@@ -25,7 +25,7 @@ enable_testing()
 
 project(tensor-algebra)
 
-set(CMAKE_BUILD_TYPE Debug)
+#set(CMAKE_BUILD_TYPE Debug)
 #set(CMAKE_BUILD_TYPE Release)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -53,6 +53,7 @@ add_executable(3plus1_ab src/3plus1_ab.cpp)
 add_executable(3plus1_abc src/3plus1_abc.cpp)
 add_executable(3plus1_abcd src/3plus1_abcd.cpp)
 add_executable(metric src/metric.cpp)
+add_executable(mapping src/mapping.cpp)
 target_link_libraries(area_ansatz tensor-algebra ${GMP_LIBRARY} ${Boost_LIBRARIES})
 target_link_libraries(area_ansatz_cyclic tensor-algebra ${GMP_LIBRARY} ${Boost_LIBRARIES})
 target_link_libraries(area_gauge tensor-algebra ${GMP_LIBRARY} ${Boost_LIBRARIES})
@@ -63,6 +64,7 @@ target_link_libraries(3plus1_ab tensor-algebra ${GMP_LIBRARY} ${Boost_LIBRARIES}
 target_link_libraries(3plus1_abc tensor-algebra ${GMP_LIBRARY} ${Boost_LIBRARIES})
 target_link_libraries(3plus1_abcd tensor-algebra ${GMP_LIBRARY} ${Boost_LIBRARIES})
 target_link_libraries(metric tensor-algebra ${GMP_LIBRARY} ${Boost_LIBRARIES})
+target_link_libraries(mapping tensor-algebra ${GMP_LIBRARY} ${Boost_LIBRARIES})
 
 add_executable(test_all src/test/RationalTest.cpp src/test/ScalarTest.cpp src/test/ScalarSumTest.cpp src/test/IndicesTest.cpp src/test/TensorTest.cpp src/test/TensorMonomialTest.cpp src/test/MonomialExpressionTest.cpp src/test/ExpressionTest.cpp src/test/CalculationsTest.cpp)
 target_link_libraries(test_all gtest_main tensor-algebra ${GMP_LIBRARY} ${Boost_LIBRARIES})
